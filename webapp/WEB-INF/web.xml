@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://java.sun.com/xml/ns/j2ee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee 
+         http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
+         version="2.4">
+
+    <display-name>Java Web History - Model 2</display-name>
+    <description>2000년대 초반 Servlet + JSP + JSTL 아키텍처 예제</description>
+
+    <!-- 문자 인코딩 필터 -->
+    <filter>
+        <filter-name>CharacterEncodingFilter</filter-name>
+        <filter-class>org.apache.catalina.filters.SetCharacterEncodingFilter</filter-class>
+        <init-param>
+            <param-name>encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+        <init-param>
+            <param-name>forceEncoding</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>CharacterEncodingFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <!-- 데이터베이스 풀 설정 (JNDI) -->
+    <resource-ref>
+        <description>Board Database Connection Pool</description>
+        <res-ref-name>jdbc/BoardDB</res-ref-name>
+        <res-type>javax.sql.DataSource</res-type>
+        <res-auth>Container</res-auth>
+    </resource-ref>
+
+    <!-- Servlet 매핑 (web.xml 방식 - @WebServlet과 동일) -->
+    <servlet>
+        <servlet-name>BoardListServlet</servlet-name>
+        <servlet-class>io.goorm.backend.controller.BoardListServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>BoardListServlet</servlet-name>
+        <url-pattern>/board/list</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>BoardWriteServlet</servlet-name>
+        <servlet-class>io.goorm.backend.controller.BoardWriteServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>BoardWriteServlet</servlet-name>
+        <url-pattern>/board/write</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>BoardInsertServlet</servlet-name>
+        <servlet-class>io.goorm.backend.controller.BoardInsertServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>BoardInsertServlet</servlet-name>
+        <url-pattern>/board/insert</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>BoardViewServlet</servlet-name>
+        <servlet-class>io.goorm.backend.controller.BoardViewServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>BoardViewServlet</servlet-name>
+        <url-pattern>/board/view</url-pattern>
+    </servlet-mapping>
+
+    <!-- JSTL 설정 -->
+    <taglib>
+        <taglib-uri>http://java.sun.com/jsp/jstl/core</taglib-uri>
+        <taglib-location>/WEB-INF/tld/c.tld</taglib-location>
+    </taglib>
+
+    <!-- 세션 설정 -->
+    <session-config>
+        <session-timeout>30</session-timeout>
+    </session-config>
+
+    <!-- 에러 페이지 설정 -->
+    <error-page>
+        <error-code>404</error-code>
+        <location>/error.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>500</error-code>
+        <location>/error.jsp</location>
+    </error-page>
+
+    <!-- 웰컴 파일 설정 -->
+    <welcome-file-list>
+        <welcome-file>index.jsp</welcome-file>
+    </welcome-file-list>
+
+    <!-- MIME 타입 설정 -->
+    <mime-mapping>
+        <extension>jsp</extension>
+        <mime-type>text/html</mime-type>
+    </mime-mapping>
+
+</web-app>
