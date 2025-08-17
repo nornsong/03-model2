@@ -95,6 +95,80 @@
 - **JSTL**: JSP에서 Java 코드 최소화
 - **에러 처리**: 사용자 친화적인 에러 메시지
 
+## 🎯 서블릿 매핑 방식 비교
+
+### 1. web.xml 방식 (전통적 방식)
+
+```xml
+<!-- web.xml에서 서블릿 매핑 -->
+<servlet>
+    <servlet-name>BoardWriteServlet</servlet-name>
+    <servlet-class>io.goorm.backend.controller.BoardWriteServlet</servlet-class>
+</servlet>
+<servlet-mapping>
+    <servlet-name>BoardWriteServlet</servlet-name>
+    <url-pattern>/board/write</url-pattern>
+</servlet-mapping>
+```
+
+**장점:**
+
+- 중앙 집중식 설정 관리
+- 배포 시 설정 변경 가능
+- 기존 시스템과의 호환성
+
+**단점:**
+
+- 설정과 코드 분리로 유지보수 복잡
+- XML 파일 크기 증가
+- 컴파일 없이 설정 변경 불가
+
+### 2. @WebServlet 애노테이션 방식 (현대적 방식)
+
+```java
+@WebServlet("/board/write")
+public class BoardWriteServlet extends HttpServlet {
+    // 서블릿 구현
+}
+```
+
+**장점:**
+
+- 코드와 설정의 일관성
+- 가독성과 유지보수성 향상
+- IDE 지원 (자동완성, 리팩토링)
+
+**단점:**
+
+- 설정 변경 시 재컴파일 필요
+- 배포 시 설정 변경 불가
+- Java 5+ (Servlet 2.5+) 필요
+
+### 3. 혼재 사용 시 주의사항
+
+⚠️ **중요**: 두 방식을 동시에 사용할 때는 **중복 매핑을 피해야 합니다**
+
+```java
+// ❌ 잘못된 예시 - 중복 매핑
+@WebServlet("/board/write")  // 애노테이션으로 매핑
+public class BoardWriteServlet extends HttpServlet {
+    // ...
+}
+```
+
+```xml
+<!-- ❌ web.xml에도 같은 URL 매핑이 있으면 중복! -->
+<servlet-mapping>
+    <servlet-name>BoardWriteServlet</servlet-name>
+    <url-pattern>/board/write</url-pattern>  <!-- 중복! -->
+</servlet-mapping>
+```
+
+**올바른 사용법:**
+
+- **강의 단계 1**: `@WebServlet` 주석처리 + `web.xml` 사용
+- **강의 단계 2**: `@WebServlet` 활성화 + `web.xml` 매핑 주석처리
+
 ## 🆚 이전 프로젝트와의 차이점
 
 ### 01-servlet vs 03-model2
@@ -187,6 +261,12 @@ copy 03-model2.war %TOMCAT_HOME%\webapps\ROOT.war
 - **JNDI**: 자바 네이밍 서비스
 - **DataSource**: 커넥션 풀 관리
 - **폴백 메커니즘**: 대체 연결 방식
+
+### 5. 서블릿 매핑 방식 비교
+
+- **web.xml 방식**: 전통적이고 중앙 집중식
+- **@WebServlet 방식**: 현대적이고 코드 중심
+- **혼재 사용**: 주의사항과 올바른 활용법
 
 ## 🔮 다음 단계
 

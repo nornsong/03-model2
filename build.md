@@ -9,113 +9,91 @@
 - **DAO**: 모델 역할 (비즈니스 로직, 데이터 액세스)
 - **데이터베이스 풀**: JNDI를 통한 커넥션 풀링
 
+## 🚀 개발 환경 설정
+
+### IntelliJ IDEA Ultimate 설정
+
+#### 1. Git에서 프로젝트 가져오기
+
+- **File** → **New** → **Project from Version Control**
+- **Git URL**: `https://github.com/topolo-edu/03-model2.git`
+- **Directory**: 원하는 로컬 경로 선택
+- **Clone** 클릭하여 프로젝트 다운로드
+
+#### 2. 프로젝트 구조 설정
+
+```
+File → Project Structure → Modules
+├── Sources 탭
+│   └── src/io/goorm/backend/ → Sources로 설정
+├── Dependencies 탭
+│   └── lib/ 폴더의 JAR 파일들을 수동으로 추가
+└── Web 탭
+    └── Web Resource Directory: webapp/ 설정
+```
+
+#### 3. 라이브러리 수동 추가
+
+```
+File → Project Structure → Libraries
+├── + 버튼 클릭 → Java
+├── lib/ 폴더 선택
+└── 필요한 JAR 파일들 선택:
+    - h2-2.x.x.jar (H2 Database)
+    - jstl-1.2.jar (JSTL)
+    - standard-1.1.2.jar (JSTL 표준 라이브러리)
+```
+
+### Tomcat 서버 설정
+
+#### IntelliJ에서 Tomcat 설정
+
+```
+Run → Edit Configurations
+├── + 버튼 클릭 → Tomcat Server → Local
+├── Application Server: 기존 설치된 Tomcat 9.x 경로 선택
+├── Deployment 탭
+│   └── + 버튼 → Artifact → 03-model2:war exploded
+└── Application context: / (루트 경로)
+```
+
 ## 🏗️ 빌드 과정
 
-### 1단계: Java 소스 컴파일
-
-```bash
-# src 디렉토리로 이동
-cd src
-
-# Java 소스 컴파일 (클래스패스에 servlet-api.jar 필요)
-javac -cp ".;../lib/servlet-api.jar" io/goorm/backend/*.java
-javac -cp ".;../lib/servlet-api.jar" io/goorm/backend/controller/*.java
-
-# 컴파일된 클래스 파일들을 webapp/WEB-INF/classes로 복사
-mkdir -p ../webapp/WEB-INF/classes/io/goorm/backend
-mkdir -p ../webapp/WEB-INF/classes/io/goorm/backend/controller
-copy io\goorm\backend\*.class ..\webapp\WEB-INF\classes\io\goorm\backend\
-copy io\goorm\backend\controller\*.class ..\webapp\WEB-INF\classes\io\goorm\backend\controller\
-```
-
-### 2단계: 필요한 라이브러리 준비
-
-```bash
-# webapp/WEB-INF/lib 디렉토리 생성
-mkdir -p ../webapp/WEB-INF/lib
-
-# 필요한 JAR 파일들을 lib 디렉토리에 복사
-# - h2-2.x.x.jar (H2 Database)
-# - jstl-1.2.jar (JSTL)
-# - standard-1.1.2.jar (JSTL 표준 라이브러리)
-# - servlet-api.jar (Servlet API - 컴파일 시에만 필요, 배포 시에는 불필요)
-```
-
-### 3단계: WAR 파일 생성
-
-```bash
-# webapp 디렉토리로 이동
-cd ../webapp
-
-# WAR 파일 생성
-jar -cvf ../03-model2.war *
-
-# 또는 수동으로 디렉토리 구조 생성
-mkdir -p 03-model2
-copy * 03-model2\
-cd 03-model2
-jar -cvf ..\03-model2.war *
-```
-
-## 🚀 배포 과정
-
-### Tomcat 배포
-
-```bash
-# Tomcat webapps 디렉토리에 WAR 파일 복사
-copy 03-model2.war %TOMCAT_HOME%\webapps\
-
-# 또는 ROOT 디렉토리에 직접 배포
-copy 03-model2.war %TOMCAT_HOME%\webapps\ROOT.war
-```
-
-### 데이터베이스 풀 설정 (선택사항)
-
-Tomcat의 `conf/server.xml` 또는 `conf/context.xml`에 데이터베이스 풀 설정:
-
-```xml
-<!-- conf/context.xml -->
-<Context>
-    <Resource name="jdbc/BoardDB"
-              auth="Container"
-              type="javax.sql.DataSource"
-              maxTotal="20"
-              maxIdle="10"
-              maxWaitMillis="-1"
-              username="sa"
-              password=""
-              driverClassName="org.h2.Driver"
-              url="jdbc:h2:./goorm_db"/>
-</Context>
-```
-
-## 📁 최종 배포 구조
+### 1단계: 프로젝트 빌드
 
 ```
-%TOMCAT_HOME%/webapps/ROOT/
-├── WEB-INF/
-│   ├── classes/
-│   │   └── io/goorm/backend/
-│   │       ├── Board.class
-│   │       ├── BoardDAO.class
-│   │       └── controller/
-│   │           ├── BoardListServlet.class
-│   │           ├── BoardWriteServlet.class
-│   │           ├── BoardInsertServlet.class
-│   │           └── BoardViewServlet.class
-│   ├── lib/
-│   │   ├── h2-2.x.x.jar
-│   │   ├── jstl-1.2.jar
-│   │   └── standard-1.1.2.jar
-│   └── web.xml
-├── board/
-│   ├── list.jsp
-│   ├── write.jsp
-│   └── view.jsp
-└── index.jsp
+Build → Build Project (Ctrl + F9)
+또는
+Build → Rebuild Project
 ```
 
-## 🔧 실행 및 테스트
+### 2단계: Artifact 생성 확인
+
+```
+File → Project Structure → Artifacts
+├── 03-model2:war exploded
+└── Output Directory 확인
+```
+
+### 3단계: 필요한 라이브러리 복사
+
+```
+webapp/WEB-INF/lib/ 폴더에 다음 JAR 파일들 복사:
+├── h2-2.x.x.jar
+├── jstl-1.2.jar
+├── standard-1.1.2.jar
+└── (servlet-api.jar는 배포 시 불필요)
+```
+
+## 🚀 실행 및 테스트
+
+### IntelliJ에서 실행
+
+```
+Run → Run '03-model2' (Shift + F10)
+또는
+Run → Debug '03-model2' (Shift + F9)
+```
 
 ### 접근 URL
 
@@ -131,16 +109,72 @@ Tomcat의 `conf/server.xml` 또는 `conf/context.xml`에 데이터베이스 풀 
 - 사용자명: `sa`
 - 비밀번호: (빈 값)
 
+## 📁 프로젝트 구조
+
+```
+03-model2/
+├── src/
+│   └── io/goorm/backend/
+│       ├── Board.java              # Board VO 클래스
+│       ├── BoardDAO.java           # Board DAO 클래스
+│       └── controller/             # Servlet 컨트롤러들
+│           ├── BoardListServlet.java
+│           ├── BoardWriteServlet.java
+│           ├── BoardInsertServlet.java
+│           └── BoardViewServlet.java
+├── webapp/
+│   ├── WEB-INF/
+│   │   ├── web.xml                 # 웹 애플리케이션 설정
+│   │   ├── lib/                    # 필요한 JAR 라이브러리들
+│   │   │   ├── h2-2.x.x.jar
+│   │   │   ├── jstl-1.2.jar
+│   │   │   └── standard-1.1.2.jar
+│   │   └── classes/                # 컴파일된 Java 클래스들 (자동 생성)
+│   ├── board/                      # 게시판 관련 JSP 페이지들
+│   │   ├── list.jsp
+│   │   ├── write.jsp
+│   │   └── view.jsp
+│   └── index.jsp
+└── lib/                            # 개발 시 필요한 라이브러리들
+    ├── h2-2.x.x.jar
+    ├── jstl-1.2.jar
+    └── standard-1.1.2.jar
+```
+
+## 🔧 데이터베이스 풀 설정 (선택사항)
+
+### Tomcat context.xml 설정
+
+```
+%TOMCAT_HOME%/conf/context.xml
+또는
+webapp/META-INF/context.xml
+```
+
+```xml
+<Context>
+    <Resource name="jdbc/BoardDB"
+              auth="Container"
+              type="javax.sql.DataSource"
+              maxTotal="20"
+              maxIdle="10"
+              maxWaitMillis="-1"
+              username="sa"
+              password=""
+              driverClassName="org.h2.Driver"
+              url="jdbc:h2:./goorm_db"/>
+</Context>
+```
+
 ## ⚠️ 주의사항
 
-### 컴파일 시
+### 개발 시
 
-- `servlet-api.jar`가 클래스패스에 있어야 함
-- Java 8~11 호환성 확인
+- IntelliJ에서 Tomcat 서버 설정 확인
+- 프로젝트 구조에서 Sources와 Web 설정 확인
 
 ### 배포 시
 
-- `servlet-api.jar`는 배포하지 않음 (Tomcat에 이미 포함)
 - JSTL 라이브러리 필수 포함
 - 데이터베이스 풀 설정 시 JNDI 이름 확인
 
@@ -148,6 +182,7 @@ Tomcat의 `conf/server.xml` 또는 `conf/context.xml`에 데이터베이스 풀 
 
 - 데이터베이스 풀 설정이 없으면 직접 연결로 폴백
 - JSTL 태그 라이브러리 경로 확인
+- Tomcat 로그에서 에러 메시지 확인
 
 ## 🎯 Model 2의 특징
 
@@ -166,4 +201,96 @@ Tomcat의 `conf/server.xml` 또는 `conf/context.xml`에 데이터베이스 풀 
 - **데이터베이스 풀**: JNDI를 통한 커넥션 풀링
 - **MVC 패턴**: Model-View-Controller 아키텍처
 
-이 가이드를 따라하면 2000년대 초반 Model 2 아키텍처의 Java 웹 애플리케이션을 성공적으로 빌드하고 배포할 수 있습니다.
+## 🔄 다음 단계: Gradle 프로젝트로 전환
+
+이 프로젝트는 나중에 Gradle 프로젝트로 전환할 수 있습니다. IntelliJ IDEA Ultimate의 메뉴를 통해 한 번에 변환할 수 있습니다.
+
+### 1. IDE 메뉴를 통한 Gradle 변환
+
+#### 변환 과정
+
+1. **File** → **New** → **Project from Existing Sources**
+2. 프로젝트 루트 폴더 선택
+3. **Import project from external model** 선택
+4. **Gradle** 선택
+5. **Next** 클릭하여 설정 완료
+
+#### 주의사항
+
+- **기존 IntelliJ 프로젝트를 닫고** 새로운 Gradle 프로젝트로 열어야 함
+- 기존 설정은 백업 후 새로운 프로젝트로 재설정 필요
+
+### 2. 변환 전후 비교
+
+| 구분                    | 수동 라이브러리 관리            | Gradle 프로젝트                   |
+| ----------------------- | ------------------------------- | --------------------------------- |
+| **의존성 관리**         | lib/ 폴더에 JAR 파일 수동 추가  | build.gradle에서 자동 관리        |
+| **라이브러리 다운로드** | 수동으로 다운로드 후 복사       | Maven Central에서 자동 다운로드   |
+| **버전 관리**           | 파일명으로 버전 확인            | build.gradle에서 명시적 버전 관리 |
+| **빌드 과정**           | IntelliJ 빌드 도구 사용         | gradlew 명령어로 빌드             |
+| **IDE 설정**            | Project Structure에서 수동 설정 | Gradle 설정 자동 인식             |
+
+### 3. 디렉토리 구조 비교
+
+#### 기존 구조 (수동 라이브러리 관리)
+
+```
+03-model2/
+├── src/
+├── webapp/
+├── lib/                    # 개발용 라이브러리
+│   ├── h2-2.x.x.jar
+│   ├── jstl-1.2.jar
+│   └── standard-1.1.2.jar
+└── .idea/                  # IntelliJ 설정
+```
+
+#### Gradle 구조 (자동 의존성 관리)
+
+```
+03-model2/
+├── src/
+├── webapp/
+├── build.gradle           # Gradle 설정 파일
+├── gradle.properties      # Gradle 속성
+├── gradlew                # Gradle Wrapper (Linux/Mac)
+├── gradlew.bat            # Gradle Wrapper (Windows)
+├── .gradle/               # Gradle 캐시 (자동 생성)
+├── build/                 # 빌드 결과물 (자동 생성)
+└── .idea/                 # IntelliJ 설정 (Gradle 프로젝트)
+```
+
+### 4. 변환 후 필요한 작업
+
+#### 새로운 IntelliJ에서 열기
+
+1. **File** → **Open**
+2. 변환된 프로젝트 폴더 선택
+3. **Open as Project** 선택
+4. IntelliJ가 Gradle 프로젝트로 인식
+
+#### 설정 재구성
+
+- **Tomcat 서버 설정**: Run Configuration 재설정
+- **Deployment**: 03-model2:war exploded 재선택
+- **Application context**: / (루트 경로) 재설정
+
+### 5. 장점
+
+1. **의존성 자동 관리**: Maven Central에서 라이브러리 자동 다운로드
+2. **버전 관리**: 라이브러리 버전을 build.gradle에서 중앙 관리
+3. **빌드 자동화**: `gradlew build` 명령으로 자동 빌드
+4. **IDE 통합**: IntelliJ에서 Gradle 프로젝트로 완벽 인식
+5. **팀 협업**: build.gradle 파일로 프로젝트 설정 공유
+
+### 6. 변환 시기
+
+- **현재**: 수동 라이브러리 관리 방식으로 기본 개념 학습
+- **다음 단계**: Gradle 변환 후 현대적인 빌드 도구 체험
+- **실무**: Gradle/Maven 등 빌드 도구 사용이 표준
+
+현재는 수동 라이브러리 관리 방식으로 진행하여 기본 개념을 이해한 후, 다음 단계에서 Gradle의 편리함을 체험할 수 있습니다.
+
+---
+
+이 가이드를 따라하면 IntelliJ IDEA Ultimate에서 Tomcat을 설정하여 2000년대 초반 Model 2 아키텍처의 Java 웹 애플리케이션을 개발할 수 있습니다.
