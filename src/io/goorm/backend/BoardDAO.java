@@ -15,18 +15,18 @@ public class BoardDAO {
    * JNDI를 통해 데이터베이스 풀에서 커넥션 획득
    */
   private Connection getConnection() throws Exception {
-    try {
+/*    try {
       // JNDI를 통해 DataSource 획득 (데이터베이스 풀)
       Context initContext = new InitialContext();
       Context envContext = (Context) initContext.lookup("java:/comp/env");
       DataSource ds = (DataSource) envContext.lookup("jdbc/BoardDB");
 
       return ds.getConnection();
-    } catch (NamingException e) {
+    } catch (NamingException e) {*/
       // JNDI 실패 시 직접 연결 (폴백)
       Class.forName("org.h2.Driver");
       return DriverManager.getConnection("jdbc:h2:file:D:/devEnv/h2/data/goorm_db;AUTO_SERVER=TRUE", "sa", "");
-    }
+    //}
   }
 
   /**
