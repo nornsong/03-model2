@@ -25,7 +25,7 @@ public class BoardDAO {
     } catch (NamingException e) {
       // JNDI 실패 시 직접 연결 (폴백)
       Class.forName("org.h2.Driver");
-      return DriverManager.getConnection("jdbc:h2:./goorm_db", "sa", "");
+      return DriverManager.getConnection("jdbc:h2:file:D:/devEnv/h2/data/goorm_db;AUTO_SERVER=TRUE", "sa", "");
     }
   }
 

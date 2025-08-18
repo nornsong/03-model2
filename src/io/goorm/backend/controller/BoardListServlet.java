@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletResponse;
  * 게시글 목록 조회 Servlet
  * Model 2 아키텍처의 컨트롤러 역할
  */
-@WebServlet("/board/list")
+//@WebServlet("/board/list")
 public class BoardListServlet extends HttpServlet {
   private static final long serialVersionUID = 1L;
 

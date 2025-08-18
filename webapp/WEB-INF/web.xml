@@ -71,11 +71,6 @@
         <url-pattern>/board/view</url-pattern>
     </servlet-mapping>
 
-    <!-- JSTL 설정 -->
-    <taglib>
-        <taglib-uri>http://java.sun.com/jsp/jstl/core</taglib-uri>
-        <taglib-location>/WEB-INF/tld/c.tld</taglib-location>
-    </taglib>
 
     <!-- 세션 설정 -->
     <session-config>
@@ -85,11 +80,11 @@
     <!-- 에러 페이지 설정 -->
     <error-page>
         <error-code>404</error-code>
-        <location>/error.jsp</location>
+        <location>/error/404.jsp</location>
     </error-page>
     <error-page>
         <error-code>500</error-code>
-        <location>/error.jsp</location>
+        <location>/error/500.jsp</location>
     </error-page>
 
     <!-- 웰컴 파일 설정 -->

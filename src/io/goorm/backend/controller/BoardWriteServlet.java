@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletResponse;
  * 게시글 작성 폼 표시 Servlet
  * Model 2 아키텍처의 컨트롤러 역할
  */
-@WebServlet("/board/write")
+//@WebServlet("/board/write")
 public class BoardWriteServlet extends HttpServlet {
   private static final long serialVersionUID = 1L;
 
