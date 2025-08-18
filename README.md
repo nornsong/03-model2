@@ -268,6 +268,33 @@ copy 03-model2.war %TOMCAT_HOME%\webapps\ROOT.war
 - **@WebServlet 방식**: 현대적이고 코드 중심
 - **혼재 사용**: 주의사항과 올바른 활용법
 
+### 6. 보안 및 사용자 관리
+
+- **XSS 방지**: Servlet Filter를 통한 전역 보안
+- **사용자 인증**: 로그인/로그아웃 및 세션 관리
+- **권한 제어**: 게시글 작성/수정/삭제 권한 관리
+
+### 7. 파일 업로드 시스템
+
+- **다중 파일 업로드**: 최대 5개 파일 동시 업로드
+- **보안 검증**: 파일 크기, 형식, 악성코드 검사
+- **사용자 경험**: 드래그 앤 드롭 및 진행률 표시
+
+### 8. 고급 기능 및 최적화
+
+- **페이지네이션**: 대용량 데이터 효율적 표시
+- **이미지 썸네일**: 자동 썸네일 생성 및 최적화
+- **대용량 업로드**: Java IO 스트림을 활용한 청크 업로드
+- **검색 기능**: 제목, 내용, 작성자별 통합 검색
+- **리치 텍스트 에디터**: CKEditor 통합 및 이미지 업로드
+
+### 9. Java IO 스트림 실무 활용
+
+- **스트림 기반 파일 처리**: 메모리 효율적인 대용량 파일 처리
+- **버퍼링 최적화**: BufferedInputStream/OutputStream 성능 향상
+- **리소스 관리**: try-with-resources를 통한 안전한 리소스 해제
+- **실무 패턴**: 파일 복사, 이동, 삭제 등 실제 업무 활용법
+
 ## 🔮 다음 단계
 
 Model 2 아키텍처는 현대적인 Java 웹 프레임워크의 기반이 되었습니다:
@@ -282,3 +309,104 @@ Model 2 아키텍처는 현대적인 Java 웹 프레임워크의 기반이 되�
 
 **03-model2**는 2000년대 초반 Java 웹 개발의 **진화된 아키텍처**를 보여주는 중요한 예제입니다.
 MVC 패턴의 이해와 Servlet/JSP/JSTL의 활용을 통해 **실무에서 사용할 수 있는 웹 애플리케이션 개발 능력**을 기를 수 있습니다.
+
+## 📁 프로젝트 구조
+
+```
+03-model2/
+├── src/                    # Java 소스 코드
+│   └── io/goorm/backend/
+│       ├── Board.java     # 게시글 모델
+│       ├── BoardDAO.java  # 데이터 접근 객체
+│       ├── filter/        # 보안 필터
+│       │   └── XSSFilter.java  # XSS 방지 필터
+│       └── controller/    # 서블릿 컨트롤러
+│           ├── BoardListServlet.java
+│           ├── BoardViewServlet.java
+│           ├── BoardWriteServlet.java
+│           └── BoardInsertServlet.java
+├── webapp/                # 웹 리소스
+│   ├── board/            # 게시판 관련 JSP
+│   │   ├── list.jsp      # 게시글 목록
+│   │   ├── view.jsp      # 게시글 상세보기
+│   │   └── write.jsp     # 게시글 작성
+│   ├── index.jsp         # 메인 페이지
+│   └── WEB-INF/
+│       ├── web.xml       # 웹 애플리케이션 설정
+│       └── lib/          # 라이브러리
+├── develop01/             # 사용자 인증 및 권한 제어
+│   ├── README.md         # 기능 개요
+│   ├── step01.md         # 회원가입 구현
+│   ├── step02.md         # 로그인/로그아웃 구현
+│   ├── step03.md         # 권한 제어 구현
+│   └── jsp/              # HTML/Tailwind CSS 버전
+│       ├── signup.html   # 회원가입 폼
+│       ├── login.html    # 로그인 폼
+│       └── userInfo.html # 사용자 정보 표시
+├── develop02/             # 파일 업로드 시스템 + 보안
+│   ├── README.md         # 기능 개요
+│   ├── step01.md         # 파일 업로드 기본 구조
+│   ├── step02.md         # 파일 업로드 처리
+│   ├── step03.md         # 파일 다운로드 및 관리
+│   ├── step04.md         # XSS 방지 및 보안 강화
+│   └── jsp/              # HTML/Tailwind CSS 버전
+│       ├── list.jsp      # 파일 첨부 표시
+│       ├── view.jsp      # 파일 다운로드
+│       └── write.jsp     # 파일 업로드 폼
+├── develop03/             # 고도화된 기능
+│   ├── README.md         # 기능 개요
+│   ├── step01.md         # 페이지네이션 시스템
+│   ├── step02.md         # 이미지 썸네일 생성
+│   ├── step03.md         # 대용량 파일 업로드 (Java IO 스트림 실습)
+│   ├── step04.md         # 간단한 검색 기능
+│   ├── step05.md         # 리치 텍스트 에디터 통합
+│   └── theory/           # Java IO 스트림 이론 강의
+│       ├── README.md     # 이론 강의 개요
+│       ├── 01-basic-concepts.md      # 기본 개념
+│       ├── 02-input-streams.md       # 입력 스트림
+│       ├── 03-output-streams.md      # 출력 스트림
+│       ├── 04-advanced-streams.md    # 고급 스트림
+│       └── 05-practical-usage.md     # 실무 활용
+├── conversion/            # 아키텍처 리팩토링
+│   ├── summary.md        # 전체 과정 요약
+│   ├── step01.md         # Front Controller Pattern
+│   ├── step02.md         # JdbcTemplate 적용
+│   └── step03.md         # Gradle 빌드시스템 추가
+├── lib/                   # 외부 라이브러리
+├── build.md               # 빌드 및 배포 가이드
+└── README.md              # 프로젝트 개요
+```
+
+## 🎯 개발 단계별 진행
+
+### **Phase 1: 기본 아키텍처 (conversion/)**
+
+- Front Controller Pattern 적용
+- JdbcTemplate으로 데이터 접근 개선
+- Gradle 빌드시스템 추가
+
+### **Phase 2: 사용자 관리 (develop01/)**
+
+- 회원가입/로그인 시스템
+- 세션 기반 인증
+- 권한 기반 접근 제어
+
+### **Phase 3: 파일 업로드 (develop02/)**
+
+- 다중 파일 업로드
+- 보안 검증 및 XSS 방지
+- 사용자 친화적 UI/UX
+
+### **Phase 4: 고도화 (develop03/)**
+
+- 페이지네이션 및 검색
+- 이미지 썸네일 생성
+- 대용량 파일 처리 최적화 (Java IO 스트림 실습)
+- 리치 텍스트 에디터 통합
+- **Java IO 스트림 이론 강의**: 기본 개념부터 실무 활용까지
+
+### **Phase 5: 스프링부트 전환**
+
+- Spring Boot + Spring Security
+- 현대적인 웹 프레임워크 적용
+- 클라우드 배포 준비
