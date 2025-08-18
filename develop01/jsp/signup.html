@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입 - 게시판</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
+        <div class="sm:mx-auto sm:w-full sm:max-w-sm">
+            <h2 class="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
+                회원가입
+            </h2>
+        </div>
+
+        <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+            <form class="space-y-6" action="front?command=signup" method="post">
+                <!-- 에러 메시지 표시 영역 -->
+                <div id="error-message" class="hidden">
+                    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" role="alert">
+                        <span class="block sm:inline" id="error-text"></span>
+                    </div>
+                </div>
+
+                <!-- 아이디 입력 -->
+                <div>
+                    <label for="username" class="block text-sm font-medium leading-6 text-gray-900">
+                        아이디
+                    </label>
+                    <div class="mt-2">
+                        <input id="username" name="username" type="text" required 
+                               class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                               placeholder="사용할 아이디를 입력하세요">
+                    </div>
+                </div>
+
+                <!-- 비밀번호 입력 -->
+                <div>
+                    <label for="password" class="block text-sm font-medium leading-6 text-gray-900">
+                        비밀번호
+                    </label>
+                    <div class="mt-2">
+                        <input id="password" name="password" type="password" required 
+                               class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                               placeholder="비밀번호를 입력하세요">
+                    </div>
+                </div>
+
+                <!-- 비밀번호 확인 -->
+                <div>
+                    <label for="password-confirm" class="block text-sm font-medium leading-6 text-gray-900">
+                        비밀번호 확인
+                    </label>
+                    <div class="mt-2">
+                        <input id="password-confirm" name="password-confirm" type="password" required 
+                               class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                               placeholder="비밀번호를 다시 입력하세요">
+                    </div>
+                </div>
+
+                <!-- 이름 입력 -->
+                <div>
+                    <label for="name" class="block text-sm font-medium leading-6 text-gray-900">
+                        이름
+                    </label>
+                    <div class="mt-2">
+                        <input id="name" name="name" type="text" required 
+                               class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                               placeholder="실명을 입력하세요">
+                    </div>
+                </div>
+
+                <!-- 이메일 입력 -->
+                <div>
+                    <label for="email" class="block text-sm font-medium leading-6 text-gray-900">
+                        이메일 (선택)
+                    </label>
+                    <div class="mt-2">
+                        <input id="email" name="email" type="email" 
+                               class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                               placeholder="이메일을 입력하세요">
+                    </div>
+                </div>
+
+                <!-- 제출 버튼 -->
+                <div>
+                    <button type="submit" 
+                            class="flex w-full justify-center rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                        회원가입
+                    </button>
+                </div>
+            </form>
+
+            <!-- 로그인 링크 -->
+            <p class="mt-10 text-center text-sm text-gray-500">
+                이미 계정이 있으신가요?
+                <a href="front?command=login" class="font-semibold leading-6 text-blue-600 hover:text-blue-500">
+                    로그인하기
+                </a>
+            </p>
+
+            <!-- 홈으로 돌아가기 -->
+            <p class="mt-4 text-center text-sm text-gray-500">
+                <a href="front?command=boardList" class="font-semibold leading-6 text-gray-600 hover:text-gray-500">
+                    ← 게시판으로 돌아가기
+                </a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // 폼 제출 시 유효성 검사
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const password = document.getElementById('password').value;
+            const passwordConfirm = document.getElementById('password-confirm').value;
+            const errorDiv = document.getElementById('error-message');
+            const errorText = document.getElementById('error-text');
+
+            // 비밀번호 확인
+            if (password !== passwordConfirm) {
+                e.preventDefault();
+                errorText.textContent = '비밀번호가 일치하지 않습니다.';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            // 비밀번호 길이 확인
+            if (password.length < 6) {
+                e.preventDefault();
+                errorText.textContent = '비밀번호는 최소 6자 이상이어야 합니다.';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            // 에러 메시지 숨기기
+            errorDiv.classList.add('hidden');
+        });
+
+        // 입력 필드 포커스 시 에러 메시지 숨기기
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('focus', function() {
+                document.getElementById('error-message').classList.add('hidden');
+            });
+        });
+    </script>
+</body>
+</html>

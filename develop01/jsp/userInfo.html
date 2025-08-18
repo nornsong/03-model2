@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사용자 정보 - 게시판</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- 헤더 영역 -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- 로고/제목 -->
+                <div class="flex items-center">
+                    <h1 class="text-xl font-semibold text-gray-900">게시판 시스템</h1>
+                </div>
+
+                <!-- 사용자 상태 표시 -->
+                <div class="flex items-center space-x-4">
+                    <!-- 로그인하지 않은 상태 -->
+                    <div id="guest-menu" class="flex items-center space-x-4">
+                        <a href="front?command=login" 
+                           class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
+                            로그인
+                        </a>
+                        <a href="front?command=signup" 
+                           class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                            회원가입
+                        </a>
+                    </div>
+
+                    <!-- 로그인한 상태 -->
+                    <div id="user-menu" class="hidden flex items-center space-x-4">
+                        <span class="text-gray-700 text-sm">
+                            안녕하세요, <span id="user-name" class="font-semibold text-blue-600">사용자</span>님!
+                        </span>
+                        <a href="front?command=logout" 
+                           class="text-gray-700 hover:text-red-600 px-3 py-2 rounded-md text-sm font-medium">
+                            로그아웃
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <!-- 게시글 목록 헤더 -->
+        <div class="px-4 py-6 sm:px-0">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-900">게시글 목록</h2>
+                
+                <!-- 글쓰기 버튼 (로그인한 사용자에게만 표시) -->
+                <div id="write-button" class="hidden">
+                    <a href="front?command=boardWrite" 
+                       class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                        글쓰기
+                    </a>
+                </div>
+            </div>
+
+            <!-- 게시글 목록 테이블 -->
+            <div class="bg-white shadow overflow-hidden sm:rounded-md">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                번호
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                제목
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                작성자
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                작성일
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <!-- 게시글 행 예시 -->
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">1</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <a href="front?command=boardView&id=1" 
+                                   class="text-blue-600 hover:text-blue-900 font-medium">
+                                    첫 번째 게시글입니다
+                                </a>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">관리자</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2024-01-15</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <a href="front?command=boardView&id=2" 
+                                   class="text-blue-600 hover:text-blue-900 font-medium">
+                                    두 번째 게시글입니다
+                                </a>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">사용자1</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2024-01-14</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- 게시글 상세보기 모달 (예시) -->
+    <div id="board-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">게시글 상세보기</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">제목</label>
+                        <p class="mt-1 text-sm text-gray-900">게시글 제목 예시</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">작성자</label>
+                        <p class="mt-1 text-sm text-gray-900">관리자</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">내용</label>
+                        <p class="mt-1 text-sm text-gray-900">게시글 내용 예시입니다...</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">작성일</label>
+                        <p class="mt-1 text-sm text-gray-900">2024-01-15</p>
+                    </div>
+                </div>
+                
+                <!-- 권한별 버튼 표시 -->
+                <div class="mt-6 flex justify-end space-x-3">
+                    <!-- 수정/삭제 버튼 (작성자에게만 표시) -->
+                    <div id="author-actions" class="hidden space-x-3">
+                        <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                            수정
+                        </button>
+                        <button class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                            삭제
+                        </button>
+                    </div>
+                    
+                    <!-- 닫기 버튼 -->
+                    <button onclick="closeModal()" 
+                            class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md text-sm font-medium">
+                        닫기
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 사용자 상태 시뮬레이션 (실제로는 서버에서 세션 정보를 받아옴)
+        let isLoggedIn = false;
+        let currentUser = {
+            id: 1,
+            username: 'admin',
+            name: '관리자'
+        };
+
+        // 로그인 상태 변경 함수
+        function toggleLoginStatus() {
+            isLoggedIn = !isLoggedIn;
+            updateUI();
+        }
+
+        // UI 업데이트 함수
+        function updateUI() {
+            const guestMenu = document.getElementById('guest-menu');
+            const userMenu = document.getElementById('user-menu');
+            const writeButton = document.getElementById('write-button');
+            const userName = document.getElementById('user-name');
+
+            if (isLoggedIn) {
+                // 로그인 상태
+                guestMenu.classList.add('hidden');
+                userMenu.classList.remove('hidden');
+                writeButton.classList.remove('hidden');
+                userName.textContent = currentUser.name;
+            } else {
+                // 비로그인 상태
+                guestMenu.classList.remove('hidden');
+                userMenu.classList.add('hidden');
+                writeButton.classList.add('hidden');
+            }
+        }
+
+        // 모달 열기
+        function openModal() {
+            document.getElementById('board-modal').classList.remove('hidden');
+        }
+
+        // 모달 닫기
+        function closeModal() {
+            document.getElementById('board-modal').classList.add('hidden');
+        }
+
+        // 작성자 권한 확인 (예시)
+        function checkAuthorPermission(boardAuthorId) {
+            if (isLoggedIn && currentUser.id === boardAuthorId) {
+                document.getElementById('author-actions').classList.remove('hidden');
+            } else {
+                document.getElementById('author-actions').classList.add('hidden');
+            }
+        }
+
+        // 초기 UI 설정
+        updateUI();
+
+        // 게시글 제목 클릭 시 모달 열기 (예시)
+        document.querySelectorAll('a[href*="boardView"]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                openModal();
+                // 실제로는 게시글 ID를 파라미터로 받아서 권한 확인
+                checkAuthorPermission(1); // 예시: 작성자 ID 1
+            });
+        });
+
+        // 로그인/로그아웃 토글 버튼 (테스트용)
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'l' || e.key === 'L') {
+                toggleLoginStatus();
+            }
+        });
+    </script>
+
+    <!-- 테스트 안내 -->
+    <div class="fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg">
+        <p class="text-sm">테스트: L키를 눌러 로그인 상태를 토글하세요</p>
+    </div>
+</body>
+</html>
