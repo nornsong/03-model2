@@ -36,13 +36,13 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     <c:choose>
-                        <c:when test="${empty boards}">
+                        <c:when test="${empty boardList}">
                             <tr>
                                 <td colspan="4" class="px-6 py-4 text-center text-gray-500">등록된 게시글이 없습니다.</td>
                             </tr>
                         </c:when>
                         <c:otherwise>
-                            <c:forEach var="board" items="${boards}">
+                            <c:forEach var="board" items="${boardList}">
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${board.id}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">

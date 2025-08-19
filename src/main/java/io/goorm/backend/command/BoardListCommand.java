@@ -15,7 +15,7 @@ public class BoardListCommand implements Command {
       // 기존 서블릿의 핵심 로직을 그대로 가져옴
       BoardDAO dao = new BoardDAO();
       List<Board> boardList = dao.getBoardList();
-
+        System.out.println(boardList);
       request.setAttribute("boardList", boardList);
       return "/board/list.jsp";
 
