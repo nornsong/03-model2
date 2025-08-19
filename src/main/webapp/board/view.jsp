@@ -12,11 +12,17 @@
         <h1 class="text-3xl font-bold text-gray-800 mb-6">게시글 보기 (Model 2)</h1>
         
         <div class="mb-4">
-            <a href="${pageContext.request.contextPath}/board/list" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2">
+            <a href="front?command=boardList" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2">
                 목록으로
             </a>
-            <a href="${pageContext.request.contextPath}/" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
-                메인으로
+            <a href="front?command=boardWrite" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mr-2">
+                글쓰기
+            </a>
+            <a href="front?command=boardUpdate&id=${board.id}" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded mr-2">
+                수정
+            </a>
+            <a href="front?command=boardDelete&id=${board.id}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                삭제
             </a>
         </div>
 

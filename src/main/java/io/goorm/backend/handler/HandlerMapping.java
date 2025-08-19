@@ -15,6 +15,8 @@ public class HandlerMapping {
     commandMap.put("boardWrite", new BoardWriteCommand());
     commandMap.put("boardInsert", new BoardInsertCommand());
     commandMap.put("boardView", new BoardViewCommand());
+    commandMap.put("boardUpdate", new BoardUpdateCommand());
+    commandMap.put("boardDelete", new BoardDeleteCommand());
   }
 
   public Command getCommand(String commandName) {

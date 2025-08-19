@@ -1,128 +1,85 @@
 package io.goorm.backend;
 
-import java.sql.*;
-import java.util.*;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import io.goorm.backend.config.DatabaseConfig;
+
+import java.util.List;
 
 /**
  * Board Data Access Object
- * 2000년대 초반 Model 2 스타일 - 데이터베이스 풀 사용
+ * Spring JdbcTemplate 사용으로 개선된 버전
  */
 public class BoardDAO {
 
-  /**
-   * JNDI를 통해 데이터베이스 풀에서 커넥션 획득
-   */
-  private Connection getConnection() throws Exception {
+  private JdbcTemplate jdbcTemplate;
 
-      // JNDI 실패 시 직접 연결 (폴백)
-      Class.forName("org.h2.Driver");
-      return DriverManager.getConnection("jdbc:h2:file:D:/devEnv/h2/data/goorm_db;AUTO_SERVER=TRUE", "sa", "");
+  public BoardDAO() {
+    this.jdbcTemplate = new JdbcTemplate(DatabaseConfig.getDataSource());
   }
+
+  // RowMapper 정의
+  private RowMapper<Board> boardRowMapper = (rs, rowNum) -> {
+    Board board = new Board();
+    board.setId(rs.getLong("id"));
+    board.setTitle(rs.getString("title"));
+    board.setContent(rs.getString("content"));
+    board.setAuthor(rs.getString("author"));
+    board.setCreatedAt(rs.getTimestamp("created_at"));
+    return board;
+  };
 
   /**
    * 게시글 목록 조회
    */
-  public List<Board> getBoardList() throws Exception {
-    List<Board> boards = new ArrayList<>();
-    Connection conn = null;
-    PreparedStatement pstmt = null;
-    ResultSet rs = null;
-
-    try {
-      conn = getConnection();
-      String sql = "SELECT * FROM board ORDER BY created_at DESC";
-      pstmt = conn.prepareStatement(sql);
-      rs = pstmt.executeQuery();
-
-      while (rs.next()) {
-        Board board = new Board();
-        board.setId(rs.getLong("id"));
-        board.setTitle(rs.getString("title"));
-        board.setContent(rs.getString("content"));
-        board.setAuthor(rs.getString("author"));
-        board.setCreatedAt(rs.getTimestamp("created_at"));
-        boards.add(board);
-      }
-    } finally {
-      closeResources(conn, pstmt, rs);
-    }
-    return boards;
-  }
-
-  /**
-   * 게시글 작성
-   */
-  public int insertBoard(Board board) throws Exception {
-    Connection conn = null;
-    PreparedStatement pstmt = null;
-
-    try {
-      conn = getConnection();
-      String sql = "INSERT INTO board (title, content, author, created_at) VALUES (?, ?, ?, NOW())";
-      pstmt = conn.prepareStatement(sql);
-      pstmt.setString(1, board.getTitle());
-      pstmt.setString(2, board.getContent());
-      pstmt.setString(3, board.getAuthor());
-
-      return pstmt.executeUpdate();
-    } finally {
-      closeResources(conn, pstmt, null);
-    }
+  public List<Board> getBoardList() {
+    String sql = "SELECT * FROM board ORDER BY created_at DESC";
+    return jdbcTemplate.query(sql, boardRowMapper);
   }
 
   /**
    * 게시글 상세 조회
    */
-  public Board getBoardById(Long id) throws Exception {
-    Connection conn = null;
-    PreparedStatement pstmt = null;
-    ResultSet rs = null;
-
+  public Board getBoardById(Long id) {
+    String sql = "SELECT * FROM board WHERE id = ?";
     try {
-      conn = getConnection();
-      String sql = "SELECT * FROM board WHERE id = ?";
-      pstmt = conn.prepareStatement(sql);
-      pstmt.setLong(1, id);
-      rs = pstmt.executeQuery();
-
-      Board board;
-
-      if (rs.next()) {
-        board = new Board();
-        board.setId(rs.getLong("id"));
-        board.setTitle(rs.getString("title"));
-        board.setContent(rs.getString("content"));
-        board.setAuthor(rs.getString("author"));
-        board.setCreatedAt(rs.getTimestamp("created_at"));
-        return board;
-      }
+      return jdbcTemplate.queryForObject(sql, boardRowMapper, id);
+    } catch (Exception e) {
       return null;
-    } finally {
-      closeResources(conn, pstmt, rs);
     }
   }
 
   /**
-   * 리소스 정리
+   * 게시글 작성
    */
-  private void closeResources(Connection conn, Statement stmt, ResultSet rs) {
-    try {
-      if (rs != null)
-        rs.close();
-    } catch (SQLException e) {
-      e.printStackTrace();
-    }
-    try {
-      if (stmt != null)
-        stmt.close();
-    } catch (SQLException e) {
-      e.printStackTrace();
-    }
-    try {
-      if (conn != null)
-        conn.close(); // 데이터베이스 풀로 반환
-    } catch (SQLException e) {
-      e.printStackTrace();
-    }
+  public void insertBoard(Board board) {
+    String sql = "INSERT INTO board (title, content, author, created_at) VALUES (?, ?, ?, NOW())";
+    jdbcTemplate.update(sql, board.getTitle(), board.getContent(), board.getAuthor());
+  }
+
+  /**
+   * 게시글 수정
+   */
+  public void updateBoard(Board board) {
+    String sql = "UPDATE board SET title = ?, content = ? WHERE id = ?";
+    jdbcTemplate.update(sql, board.getTitle(), board.getContent(), board.getId());
+  }
+
+  /**
+   * 게시글 삭제
+   */
+  public boolean deleteBoard(Long id) {
+    String sql = "DELETE FROM board WHERE id = ?";
+    int result = jdbcTemplate.update(sql, id);
+    return result > 0;
+  }
+
+  /**
+   * 제목으로 게시글 검색
+   */
+  public List<Board> searchByTitle(String keyword) {
+    String sql = "SELECT * FROM board WHERE title LIKE ? ORDER BY created_at DESC";
+    String searchKeyword = "%" + keyword + "%";
+    return jdbcTemplate.query(sql, boardRowMapper, searchKeyword);
   }
 }
