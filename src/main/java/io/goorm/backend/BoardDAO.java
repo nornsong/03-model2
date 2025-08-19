@@ -2,8 +2,6 @@ package io.goorm.backend;
 
 import java.sql.*;
 import java.util.*;
-import javax.naming.*;
-import javax.sql.DataSource;
 
 /**
  * Board Data Access Object
@@ -87,8 +85,10 @@ public class BoardDAO {
       pstmt.setLong(1, id);
       rs = pstmt.executeQuery();
 
+      Board board;
+
       if (rs.next()) {
-        Board board = new Board();
+        board = new Board();
         board.setId(rs.getLong("id"));
         board.setTitle(rs.getString("title"));
         board.setContent(rs.getString("content"));

@@ -60,3 +60,5 @@
 /out/artifacts/03_model2_war_exploded/WEB-INF/web.xml
 /out/artifacts/03_model2_war_exploded/WEB-INF/lib/websocket-api.jar
 /out/artifacts/03_model2_war_exploded/board/write.jsp
+/out/
+/build/
