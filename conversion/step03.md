@@ -159,12 +159,12 @@ dependencies {
     implementation 'org.springframework:spring-jdbc:5.3.20'
     implementation 'org.springframework:spring-tx:5.3.20'
 
-    // Database
-    implementation 'com.h2database:h2:2.1.214'
+            // Database
+        implementation 'com.h2database:h2:2.3.232'  // 현재 사용 중인 H2 버전
 
     // Servlet & JSP - provided scope 사용 (Tomcat에서 제공)
     providedCompile 'javax.servlet:javax.servlet-api:4.0.1'
-    providedCompile 'javax.servlet.jsp:javax.servlet.jsp-api:2.2'
+    providedCompile 'javax.servlet.jsp:javax.servlet.jsp-api:2.3.3'
     implementation 'javax.servlet:jstl:1.2'
 
     // Test
@@ -233,6 +233,16 @@ rootProject.name = '03-model2'
    - `src/main/webapp` → `Web Resource Directory` (초록색 폴더)
 4. `OK` 클릭
 
+#### 4-4. 폴더 색상 확인
+
+**올바른 폴더 색상 구성:**
+
+- **`src`** → **노란색** (일반 디렉토리, 컨테이너 역할)
+- **`src/main/java`** → **파란색** (Sources Root, Java 소스 코드)
+- **`src/main/webapp`** → **초록색** (Web Resource Directory, 웹 리소스)
+
+**주의**: `src` 폴더 자체는 파란색이 아니어야 합니다. 파란색은 `src/main/java`와 같은 실제 소스 코드가 있는 폴더에만 적용됩니다.
+
 ### 5단계: 기존 라이브러리 정리
 
 #### 5-1. lib 폴더 정리
@@ -248,6 +258,37 @@ Project Structure → Modules → Dependencies
 └── Gradle 의존성으로 대체됨
 ```
 
+### 6단계: 톰캣 배포 설정 변경
+
+**Gradle WAR 파일을 사용하도록 톰캣 배포 설정을 변경합니다.**
+
+#### 6-1. 톰캣 실행/디버그 구성 열기
+
+1. 상단 메뉴 `Run` → `Edit Configurations` 클릭
+2. 좌측에서 `Tomcat Server` → `Tomcat 9.0.108` 선택
+
+#### 6-2. 배포(Deployment) 탭 설정
+
+1. **배포(Deployment)** 탭 클릭
+2. **"서버 시작 시 배포"** 섹션에서:
+   - 기존 `03-model2:war exploded` 제거 (빨간색 `-` 버튼 클릭)
+   - `+` 버튼 클릭 → `Artifact` 선택
+   - `Gradle : io.goorm.backend : 03-model2-1.0.war` 선택
+3. **"애플리케이션 컨텍스트"** 필드 확인:
+   - `/` (루트)로 설정되어 있는지 확인
+
+#### 6-3. 실행 전(Before launch) 설정
+
+1. **"실행 전(B)"** 섹션에서:
+   - 기존 설정이 있다면 제거
+   - `+` 버튼 클릭 → `Build Artifacts` 선택
+   - `Gradle : io.goorm.backend : 03-model2-1.0.war` 선택
+
+#### 6-4. 설정 저장
+
+1. `Apply` 클릭
+2. `OK` 클릭하여 설정 저장
+
 ## 📝 완료 체크리스트
 
 - [ ] Gradle 설정 파일들 수동 생성 (build.gradle, settings.gradle)
@@ -255,7 +296,9 @@ Project Structure → Modules → Dependencies
 - [ ] Gradle 탭에서 의존성 자동 다운로드 확인
 - [ ] **폴더 구조 수동 변경**: src → src/main/java, webapp → src/main/webapp
 - [ ] **IntelliJ 소스 폴더 재설정**: Sources, Web Resource Directory 설정
+- [ ] **폴더 색상 확인**: src(노란색), src/main/java(파란색), src/main/webapp(초록색)
 - [ ] 기존 lib 폴더 정리
+- [ ] **톰캣 배포 설정 변경**: Gradle WAR 파일 사용
 - [ ] Gradle 빌드 테스트
 - [ ] WAR 파일 생성 테스트
 
@@ -273,8 +316,9 @@ Project Structure → Modules → Dependencies
   - Project Structure → Modules → Dependencies에서 기존 JAR들 제거
 - **Spring Framework 버전 호환성 확인**
 - **Tomcat 서버 설정 재확인 필요**
-  - Deployment 탭에서 WAR 파일 경로를 `src/main/webapp/`로 변경
-  - Application context 설정 유지
+  - Deployment 탭에서 Gradle WAR 파일 사용 설정
+  - 기존 `03-model2:war exploded` 제거하고 `Gradle : io.goorm.backend : 03-model2-1.0.war` 사용
+  - Application context 설정 유지 (`/`)
 - **Gradle 동기화 완료 확인**
   - Gradle 탭에서 새로고침 버튼 클릭
   - 의존성 다운로드 완료까지 대기
