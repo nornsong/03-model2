@@ -60,11 +60,11 @@ public int getSearchBoardCount(String searchType, String searchKeyword) {
         case "content":
             sql = "SELECT COUNT(*) FROM board WHERE content LIKE ?";
             break;
-        case "writer":
-            sql = "SELECT COUNT(*) FROM board b JOIN user u ON b.writer_id = u.id WHERE u.name LIKE ?";
+        case "author":
+            sql = "SELECT COUNT(*) FROM board b JOIN user u ON b.author_id = u.id WHERE u.name LIKE ?";
             break;
         case "all":
-            sql = "SELECT COUNT(*) FROM board b JOIN user u ON b.writer_id = u.id " +
+            sql = "SELECT COUNT(*) FROM board b JOIN user u ON b.author_id = u.id " +
                   "WHERE b.title LIKE ? OR b.content LIKE ? OR u.name LIKE ?";
             break;
         default:
@@ -97,34 +97,34 @@ public List<Board> searchBoardWithPagination(String searchType, String searchKey
 
     switch (searchType) {
         case "title":
-            sql = "SELECT b.*, u.name as writer_name FROM board b " +
-                  "JOIN user u ON b.writer_id = u.id " +
+            sql = "SELECT b.*, u.name as author_name FROM board b " +
+                  "JOIN user u ON b.author_id = u.id " +
                   "WHERE b.title LIKE ? ORDER BY b.id DESC LIMIT ? OFFSET ?";
             params = new Object[]{"%" + searchKeyword + "%", pageSize, startRow};
             break;
         case "content":
-            sql = "SELECT b.*, u.name as writer_name FROM board b " +
-                  "JOIN user u ON b.writer_id = u.id " +
+            sql = "SELECT b.*, u.name as author_name FROM board b " +
+                  "JOIN user u ON b.author_id = u.id " +
                   "WHERE b.content LIKE ? ORDER BY b.id DESC LIMIT ? OFFSET ?";
             params = new Object[]{"%" + searchKeyword + "%", pageSize, startRow};
             break;
-        case "writer":
-            sql = "SELECT b.*, u.name as writer_name FROM board b " +
-                  "JOIN user u ON b.writer_id = u.id " +
+        case "author":
+            sql = "SELECT b.*, u.name as author_name FROM board b " +
+                  "JOIN user u ON b.author_id = u.id " +
                   "WHERE u.name LIKE ? ORDER BY b.id DESC LIMIT ? OFFSET ?";
             params = new Object[]{"%" + searchKeyword + "%", pageSize, startRow};
             break;
         case "all":
-            sql = "SELECT b.*, u.name as writer_name FROM board b " +
-                  "JOIN user u ON b.writer_id = u.id " +
+            sql = "SELECT b.*, u.name as author_name FROM board b " +
+                  "JOIN user u ON b.author_id = u.id " +
                   "WHERE b.title LIKE ? OR b.content LIKE ? OR u.name LIKE ? " +
                   "ORDER BY b.id DESC LIMIT ? OFFSET ?";
             params = new Object[]{"%" + searchKeyword + "%", "%" + searchKeyword + "%",
                                 "%" + searchKeyword + "%", pageSize, startRow};
             break;
         default:
-            sql = "SELECT b.*, u.name as writer_name FROM board b " +
-                  "JOIN user u ON b.writer_id = u.id " +
+            sql = "SELECT b.*, u.name as author_name FROM board b " +
+                  "JOIN user u ON b.author_id = u.id " +
                   "ORDER BY b.id DESC LIMIT ? OFFSET ?";
             params = new Object[]{pageSize, startRow};
     }
@@ -229,7 +229,7 @@ public String execute(HttpServletRequest request, HttpServletResponse response) 
                     <option value="all" ${searchType == 'all' ? 'selected' : ''}>전체</option>
                     <option value="title" ${searchType == 'title' ? 'selected' : ''}>제목</option>
                     <option value="content" ${searchType == 'content' ? 'selected' : ''}>내용</option>
-                    <option value="writer" ${searchType == 'writer' ? 'selected' : ''}>작성자</option>
+                    <option value="author" ${searchType == 'author' ? 'selected' : ''}>작성자</option>
                 </select>
             </div>
 

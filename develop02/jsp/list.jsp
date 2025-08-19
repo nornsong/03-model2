@@ -138,8 +138,8 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                             <c:choose>
-                                                <c:when test="${not empty board.writerName}">
-                                                    ${board.writerName}
+                                                                        <c:when test="${not empty board.authorName}">
+                            ${board.authorName}
                                                 </c:when>
                                                 <c:otherwise>
                                                     ${board.author}

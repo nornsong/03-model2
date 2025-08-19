@@ -179,11 +179,11 @@ public int getTotalBoardCount() {
  */
 public List<Board> getBoardListWithPagination(int page, int pageSize) {
     String sql = "SELECT b.id, b.title, b.author, b.created_at, " +
-                 "u.name as writer_name, " +
-                 "(SELECT COUNT(*) FROM file_upload f WHERE f.board_id = b.id) as file_count " +
-                 "FROM board b " +
-                 "LEFT JOIN user u ON b.writer_id = u.id " +
-                 "ORDER BY b.id DESC " +
+                                 "u.name as author_name, " +
+                "(SELECT COUNT(*) FROM file_upload f WHERE f.board_id = b.id) as file_count " +
+                "FROM board b " +
+                "LEFT JOIN user u ON b.author_id = u.id " +
+                "ORDER BY b.id DESC " +
                  "LIMIT ? OFFSET ?";
 
     List<Board> boards = new ArrayList<>();
@@ -201,7 +201,7 @@ public List<Board> getBoardListWithPagination(int page, int pageSize) {
                 board.setTitle(rs.getString("title"));
                 board.setAuthor(rs.getString("author"));
                 board.setCreatedAt(rs.getString("created_at"));
-                board.setWriterName(rs.getString("writer_name"));
+                board.setAuthorName(rs.getString("author_name"));
                 board.setFileCount(rs.getInt("file_count"));
 
                 // 새 글 여부 확인 (24시간 이내)
@@ -367,7 +367,7 @@ public String execute(HttpServletRequest request, HttpServletResponse response) 
 public String execute(HttpServletRequest request, HttpServletResponse response) {
     try {
         // 검색 파라미터 처리
-        String searchType = request.getParameter("searchType"); // title, content, writer
+        String searchType = request.getParameter("searchType"); // title, content, author
         String searchKeyword = request.getParameter("searchKeyword");
 
         // 페이지 파라미터 처리

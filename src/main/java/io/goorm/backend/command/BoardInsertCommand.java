@@ -15,20 +15,20 @@ public class BoardInsertCommand implements Command {
       request.setCharacterEncoding("UTF-8");
 
       String title = request.getParameter("title");
-      String writer = request.getParameter("writer");
+      String author = request.getParameter("author");
       String content = request.getParameter("content");
 
       if (title == null || title.trim().isEmpty()) {
         request.setAttribute("error", "제목을 입력해주세요.");
         request.setAttribute("title", title);
-        request.setAttribute("writer", writer);
+        request.setAttribute("author", author);
         request.setAttribute("content", content);
         return "/board/write.jsp";
       }
 
       Board board = new Board();
       board.setTitle(title);
-      board.setWriter(writer);
+      board.setAuthor(author);
       board.setContent(content);
 
       BoardDAO dao = new BoardDAO();

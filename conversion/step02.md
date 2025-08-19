@@ -114,7 +114,7 @@ public class BoardDAO {
         Board board = new Board();
         board.setId(rs.getInt("id"));
         board.setTitle(rs.getString("title"));
-        board.setWriter(rs.getString("writer"));
+        board.setAuthor(rs.getString("author"));
         board.setContent(rs.getString("content"));
         board.setRegDate(rs.getTimestamp("reg_date"));
         return board;
@@ -135,8 +135,8 @@ public class BoardDAO {
     }
 
     public void insertBoard(Board board) {
-        String sql = "INSERT INTO board (title, writer, content, reg_date) VALUES (?, ?, ?, NOW())";
-        jdbcTemplate.update(sql, board.getTitle(), board.getWriter(), board.getContent());
+        String sql = "INSERT INTO board (title, author, content, reg_date) VALUES (?, ?, ?, NOW())";
+        jdbcTemplate.update(sql, board.getTitle(), board.getAuthor(), board.getContent());
     }
 }
 ```

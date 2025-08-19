@@ -31,8 +31,8 @@
 ## 📋 준비사항
 
 - 2단계 완료 (로그인/로그아웃 기능 구현)
-- Board 테이블에 writer_id 필드 추가 필요
-- 기존 게시글 데이터의 writer_id 업데이트 필요
+- Board 테이블에 author_id 필드 추가 필요
+- 기존 게시글 데이터의 author_id 업데이트 필요
 
 ## 🚀 실습 단계별 진행
 
@@ -49,15 +49,15 @@
 **기존 Board 테이블에 작성자 정보를 추가합니다.**
 
 ```sql
--- Board 테이블에 writer_id 컬럼 추가
-ALTER TABLE board ADD COLUMN writer_id INT;
+-- Board 테이블에 author_id 컬럼 추가
+ALTER TABLE board ADD COLUMN author_id INT;
 
--- 기존 게시글의 writer_id를 기본값으로 설정 (선택사항)
-UPDATE board SET writer_id = 1 WHERE writer_id IS NULL;
+-- 기존 게시글의 author_id를 기본값으로 설정 (선택사항)
+UPDATE board SET author_id = 1 WHERE author_id IS NULL;
 
 -- 외래키 제약조건 추가 (선택사항)
-ALTER TABLE board ADD CONSTRAINT fk_board_writer
-FOREIGN KEY (writer_id) REFERENCES user(id);
+ALTER TABLE board ADD CONSTRAINT fk_board_author
+FOREIGN KEY (author_id) REFERENCES user(id);
 ```
 
 ### 2단계: Board 모델 클래스 수정
@@ -66,25 +66,25 @@ FOREIGN KEY (writer_id) REFERENCES user(id);
 
 ```java
 // 기존 필드에 추가
-private int writerId;
-private String writerName; // 작성자 이름 (표시용)
+    private int authorId;
+    private String authorName; // 작성자 이름 (표시용)
 
 // getter, setter 메서드 추가
-public int getWriterId() {
-    return writerId;
-}
+    public int getAuthorId() {
+        return authorId;
+    }
 
-public void setWriterId(int writerId) {
-    this.writerId = writerId;
-}
+    public void setAuthorId(int authorId) {
+        this.authorId = authorId;
+    }
 
-public String getWriterName() {
-    return writerName;
-}
+    public String getAuthorName() {
+        return authorName;
+    }
 
-public void setWriterName(String writerName) {
-    this.writerName = writerName;
-}
+    public void setAuthorName(String authorName) {
+        this.authorName = authorName;
+    }
 ```
 
 ### 3단계: BoardDAO 수정
@@ -94,12 +94,12 @@ public void setWriterName(String writerName) {
 ```java
 // insertBoard 메서드 수정
 public boolean insertBoard(Board board) {
-    String sql = "INSERT INTO board (title, content, writer_id, reg_date) VALUES (?, ?, ?, ?)";
+    String sql = "INSERT INTO board (title, content, author_id, reg_date) VALUES (?, ?, ?, ?)";
     try {
         int result = jdbcTemplate.update(sql,
             board.getTitle(),
             board.getContent(),
-            board.getWriterId(),
+            board.getAuthorId(),
             board.getRegDate());
         return result > 0;
     } catch (Exception e) {
@@ -109,9 +109,9 @@ public boolean insertBoard(Board board) {
 
 // getBoardList 메서드 수정 (작성자 이름 포함)
 public List<Board> getBoardList() {
-    String sql = "SELECT b.*, u.name as writer_name FROM board b " +
-                 "LEFT JOIN user u ON b.writer_id = u.id " +
-                 "ORDER BY b.id DESC";
+            String sql = "SELECT b.*, u.name as author_name FROM board b " +
+                     "LEFT JOIN user u ON b.author_id = u.id " +
+                     "ORDER BY b.id DESC";
     try {
         return jdbcTemplate.query(sql, boardRowMapper);
     } catch (Exception e) {
@@ -121,9 +121,9 @@ public List<Board> getBoardList() {
 
 // getBoard 메서드 수정 (작성자 이름 포함)
 public Board getBoard(int id) {
-    String sql = "SELECT b.*, u.name as writer_name FROM board b " +
-                 "LEFT JOIN user u ON b.writer_id = u.id " +
-                 "WHERE b.id = ?";
+            String sql = "SELECT b.*, u.name as author_name FROM board b " +
+                     "LEFT JOIN user u ON b.author_id = u.id " +
+                     "WHERE b.id = ?";
     try {
         return jdbcTemplate.queryForObject(sql, boardRowMapper, id);
     } catch (Exception e) {
@@ -137,8 +137,8 @@ private RowMapper<Board> boardRowMapper = (rs, rowNum) -> {
     board.setId(rs.getInt("id"));
     board.setTitle(rs.getString("title"));
     board.setContent(rs.getString("content"));
-    board.setWriterId(rs.getInt("writer_id"));
-    board.setWriterName(rs.getString("writer_name"));
+            board.setAuthorId(rs.getInt("author_id"));
+        board.setAuthorName(rs.getString("author_name"));
     board.setRegDate(rs.getTimestamp("reg_date"));
     return board;
 };
@@ -184,7 +184,7 @@ public String execute(HttpServletRequest request, HttpServletResponse response) 
             Board board = new Board();
             board.setTitle(title);
             board.setContent(content);
-            board.setWriterId((Integer) session.getAttribute("userId"));
+            board.setAuthorId((Integer) session.getAttribute("userId"));
             board.setRegDate(new Timestamp(System.currentTimeMillis()));
 
             BoardDAO boardDAO = new BoardDAO();
@@ -228,7 +228,7 @@ public String execute(HttpServletRequest request, HttpServletResponse response) 
 
             // 작성자 확인
             int currentUserId = (Integer) session.getAttribute("userId");
-            if (board.getWriterId() != currentUserId) {
+            if (board.getAuthorId() != currentUserId) {
                 request.setAttribute("error", "본인이 작성한 글만 수정할 수 있습니다.");
                 return "/board/view.jsp";
             }
@@ -257,21 +257,21 @@ public String execute(HttpServletRequest request, HttpServletResponse response) 
 </c:if>
 
 <!-- 게시글 목록에서 작성자 표시 -->
-<td>${board.writerName}</td>
+                        <td>${board.authorName}</td>
 ```
 
 **게시글 상세보기** (`src/main/webapp/board/view.jsp`) 수정:
 
 ```jsp
 <!-- 수정/삭제 버튼을 작성자에게만 표시 -->
-<c:if test="${sessionScope.userId == board.writerId}">
+                <c:if test="${sessionScope.userId == board.authorId}">
     <a href="front?command=boardUpdate&id=${board.id}">수정</a>
     <a href="front?command=boardDelete&id=${board.id}"
        onclick="return confirm('정말 삭제하시겠습니까?')">삭제</a>
 </c:if>
 
 <!-- 작성자 정보 표시 -->
-<p>작성자: ${board.writerName}</p>
+            <p>작성자: ${board.authorName}</p>
 ```
 
 ### 6단계: AuthFilter 생성 (선택사항)
@@ -328,7 +328,7 @@ public class AuthFilter implements Filter {
 
 ## 📝 완료 체크리스트
 
-- [ ] Board 테이블에 writer_id 컬럼 추가
+- [ ] Board 테이블에 author_id 컬럼 추가
 - [ ] Board 모델 클래스에 작성자 정보 필드 추가
 - [ ] BoardDAO 수정 (작성자 정보 포함)
 - [ ] BoardWriteCommand에 로그인 확인 추가

@@ -12,11 +12,8 @@
         <h1 class="text-3xl font-bold text-gray-800 mb-6">글쓰기 (Model 2)</h1>
         
         <div class="mb-4">
-            <a href="${pageContext.request.contextPath}/board/list" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2">
+            <a href="front?command=boardList" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2">
                 목록으로
-            </a>
-            <a href="${pageContext.request.contextPath}/" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
-                메인으로
             </a>
         </div>
 
@@ -28,7 +25,7 @@
         </c:if>
 
         <div class="bg-white shadow-md rounded-lg p-6">
-            <form action="${pageContext.request.contextPath}/board/insert" method="post" class="space-y-4">
+            <form action="front?command=boardInsert" method="post" class="space-y-4">
                 <div>
                     <label for="title" class="block text-sm font-medium text-gray-700 mb-2">제목</label>
                     <input type="text" id="title" name="title" required 

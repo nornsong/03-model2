@@ -57,11 +57,11 @@
             <div class="bg-white rounded-lg shadow-lg p-6">
                 <h3 class="text-xl font-bold text-gray-800 mb-4">게시판 기능</h3>
                 <div class="space-y-3">
-                    <a href="${pageContext.request.contextPath}/board/list" 
+                    <a href="front?command=boardList" 
                        class="block w-full bg-blue-500 hover:bg-blue-600 text-white text-center py-3 px-4 rounded-lg font-semibold transition-colors">
                         게시글 목록 보기
                     </a>
-                    <a href="${pageContext.request.contextPath}/board/write" 
+                    <a href="front?command=boardWrite" 
                        class="block w-full bg-green-500 hover:bg-green-600 text-white text-center py-3 px-4 rounded-lg font-semibold transition-colors">
                         새 글 작성하기
                     </a>

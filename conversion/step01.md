@@ -362,7 +362,7 @@ public class FrontController extends HttpServlet {
         </p>
         <p>
             <label>작성자:</label>
-            <input type="text" name="writer" value="${writer}" required>
+            <input type="text" name="author" value="${author}" required>
         </p>
         <p>
             <label>내용:</label>
@@ -406,7 +406,7 @@ public class FrontController extends HttpServlet {
             </tr>
             <tr>
                 <th>작성자</th>
-                <td>${board.writer}</td>
+                <td>${board.author}</td>
             </tr>
             <tr>
                 <th>작성일</th>
@@ -493,20 +493,20 @@ public class BoardInsertCommand implements Command {
             request.setCharacterEncoding("UTF-8");
 
             String title = request.getParameter("title");
-            String writer = request.getParameter("writer");
+            String author = request.getParameter("author");
             String content = request.getParameter("content");
 
             if (title == null || title.trim().isEmpty()) {
                 request.setAttribute("error", "제목을 입력해주세요.");
                 request.setAttribute("title", title);
-                request.setAttribute("writer", writer);
+                request.setAttribute("author", author);
                 request.setAttribute("content", content);
                 return "/board/write.jsp";
             }
 
             Board board = new Board();
             board.setTitle(title);
-            board.setWriter(writer);
+            board.setAuthor(author);
             board.setContent(content);
 
             BoardDAO dao = new BoardDAO();

@@ -102,8 +102,8 @@
                                     <span>번호: ${board.id}</span>
                                     <span>작성자: 
                                         <c:choose>
-                                            <c:when test="${not empty board.writerName}">
-                                                ${board.writerName}
+                                                                    <c:when test="${not empty board.authorName}">
+                            ${board.authorName}
                                             </c:when>
                                             <c:otherwise>
                                                 ${board.author}
@@ -124,7 +124,7 @@
                             </div>
                             
                             <!-- 수정/삭제 버튼 (작성자에게만 표시) -->
-                            <c:if test="${sessionScope.userId == board.writerId}">
+                            <c:if test="${sessionScope.userId == board.authorId}">
                                 <div class="flex space-x-2">
                                     <a href="front?command=boardUpdate&id=${board.id}" 
                                        class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-md text-sm font-medium">

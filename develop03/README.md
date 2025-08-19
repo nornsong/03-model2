@@ -60,7 +60,7 @@
 ### 데이터베이스
 
 - `file_upload` 테이블 확장 (썸네일 정보, 파일 메타데이터)
-- `board` 테이블 수정 (writer_id, writer_name 추가)
+- `board` 테이블 수정 (author_id, author_name 추가)
 
 ## 🔧 기술적 고려사항
 

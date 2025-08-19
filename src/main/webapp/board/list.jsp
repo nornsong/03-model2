@@ -12,10 +12,7 @@
         <h1 class="text-3xl font-bold text-gray-800 mb-6">게시판 목록 (Model 2)</h1>
         
         <div class="mb-4">
-            <a href="${pageContext.request.contextPath}/" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2">
-                메인으로
-            </a>
-            <a href="${pageContext.request.contextPath}/board/write" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+            <a href="front?command=boardWrite" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
                 글쓰기
             </a>
         </div>
@@ -49,7 +46,7 @@
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${board.id}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        <a href="${pageContext.request.contextPath}/board/view?id=${board.id}" class="text-blue-600 hover:text-blue-900">${board.title}</a>
+                                        <a href="front?command=boardView&id=${board.id}" class="text-blue-600 hover:text-blue-900">${board.title}</a>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${board.author}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${board.createdAt}</td>
