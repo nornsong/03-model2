@@ -1,0 +1,39 @@
+plugins {
+    id 'java'
+    id 'war'
+}
+
+group = 'io.goorm.backend'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Spring Framework
+    implementation 'org.springframework:spring-core:5.3.20'
+    implementation 'org.springframework:spring-context:5.3.20'
+    implementation 'org.springframework:spring-jdbc:5.3.20'
+    implementation 'org.springframework:spring-tx:5.3.20'
+
+    // Database
+    implementation 'com.h2database:h2:2.3.232'
+
+    providedCompile 'javax.servlet:javax.servlet-api:4.0.1'
+    providedCompile 'javax.servlet.jsp:javax.servlet.jsp-api:2.3.3'
+    implementation 'javax.servlet:jstl:1.2'
+
+    // Test
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.2'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+// WAR 파일 설정
+war {
+    archiveBaseName = '03-model2'
+    archiveVersion = '1.0'
+}

@@ -62,3 +62,5 @@
 /out/artifacts/03_model2_war_exploded/board/write.jsp
 /out/
 /build/
+/.idea/
+/.gradle/
