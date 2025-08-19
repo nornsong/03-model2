@@ -123,9 +123,9 @@
                                 </tr>
                             </c:when>
                             <c:otherwise>
-                                <c:forEach var="board" items="${boards}">
+                                <c:forEach var="board" items="${boards}" varStatus="status">
                                     <tr class="hover:bg-gray-50">
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${board.id}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${boards.size() - status.index}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                             <a href="front?command=boardView&id=${board.id}" 
                                                class="text-blue-600 hover:text-blue-900 font-medium">
