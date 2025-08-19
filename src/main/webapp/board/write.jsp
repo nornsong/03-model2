@@ -9,7 +9,37 @@
 </head>
 <body class="bg-gray-100">
     <div class="container mx-auto px-4 py-8">
-        <h1 class="text-3xl font-bold text-gray-800 mb-6">글쓰기 (Model 2)</h1>
+        <!-- 헤더 영역 -->
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-800">글쓰기 (Model 2)</h1>
+            
+            <!-- 사용자 상태 표시 -->
+            <div class="flex items-center space-x-4">
+                <c:choose>
+                    <c:when test="${not empty sessionScope.user}">
+                        <!-- 로그인한 상태 -->
+                        <span class="text-gray-700 text-sm">
+                            안녕하세요, <span class="font-semibold text-blue-600">${sessionScope.userName}</span>님!
+                        </span>
+                        <a href="front?command=logout" 
+                           class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded text-sm font-medium">
+                            로그아웃
+                        </a>
+                    </c:when>
+                    <c:otherwise>
+                        <!-- 로그인하지 않은 상태 -->
+                        <a href="front?command=login" 
+                           class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded text-sm font-medium">
+                            로그인
+                        </a>
+                        <a href="front?command=signup" 
+                           class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-2 rounded text-sm font-medium">
+                            회원가입
+                        </a>
+                    </c:otherwise>
+                </c:choose>
+            </div>
+        </div>
         
         <div class="mb-4">
             <a href="front?command=boardList" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2">

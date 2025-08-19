@@ -17,6 +17,9 @@ public class HandlerMapping {
     commandMap.put("boardView", new BoardViewCommand());
     commandMap.put("boardUpdate", new BoardUpdateCommand());
     commandMap.put("boardDelete", new BoardDeleteCommand());
+    commandMap.put("signup", new SignupCommand());
+    commandMap.put("login", new LoginCommand());
+    commandMap.put("logout", new LogoutCommand());
   }
 
   public Command getCommand(String commandName) {

@@ -8,9 +8,39 @@
 </head>
 <body class="bg-gray-100">
     <div class="container mx-auto px-4 py-8">
-        <div class="text-center mb-12">
-            <h1 class="text-4xl font-bold text-gray-800 mb-4">Java Web History - Model 2</h1>
-            <p class="text-xl text-gray-600">2000년대 초반 Servlet + JSP + JSTL 아키텍처</p>
+        <!-- 헤더 영역 -->
+        <div class="flex justify-between items-center mb-8">
+            <div class="text-center">
+                <h1 class="text-4xl font-bold text-gray-800 mb-4">Java Web History - Model 2</h1>
+                <p class="text-xl text-gray-600">2000년대 초반 Servlet + JSP + JSTL 아키텍처</p>
+            </div>
+            
+            <!-- 사용자 상태 표시 -->
+            <div class="flex items-center space-x-4">
+                <c:choose>
+                    <c:when test="${not empty sessionScope.user}">
+                        <!-- 로그인한 상태 -->
+                        <span class="text-gray-700 text-sm">
+                            안녕하세요, <span class="font-semibold text-blue-600">${sessionScope.userName}</span>님!
+                        </span>
+                        <a href="front?command=logout" 
+                           class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium">
+                            로그아웃
+                        </a>
+                    </c:when>
+                    <c:otherwise>
+                        <!-- 로그인하지 않은 상태 -->
+                        <a href="front?command=login" 
+                           class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium">
+                            로그인
+                        </a>
+                        <a href="front?command=signup" 
+                           class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-md text-sm font-medium">
+                            회원가입
+                        </a>
+                    </c:otherwise>
+                </c:choose>
+            </div>
         </div>
 
         <div class="bg-white rounded-lg shadow-lg p-8 mb-8">
@@ -64,6 +94,21 @@
                     <a href="front?command=boardWrite" 
                        class="block w-full bg-green-500 hover:bg-green-600 text-white text-center py-3 px-4 rounded-lg font-semibold transition-colors">
                         새 글 작성하기
+                    </a>
+                </div>
+            </div>
+
+            <!-- 사용자 관리 -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">사용자 관리</h3>
+                <div class="space-y-3">
+                    <a href="front?command=signup" 
+                       class="block w-full bg-purple-500 hover:bg-purple-600 text-white text-center py-3 px-4 rounded-lg font-semibold transition-colors">
+                        회원가입
+                    </a>
+                    <a href="front?command=login" 
+                       class="block w-full bg-indigo-500 hover:bg-indigo-600 text-white text-center py-3 px-4 rounded-lg font-semibold transition-colors">
+                        로그인
                     </a>
                 </div>
             </div>
