@@ -17,7 +17,7 @@ public class BoardViewCommand implements Command {
         return "/board/list.jsp";
       }
 
-      int id = Integer.parseInt(idStr);
+      Long id = Long.parseLong(idStr);
       BoardDAO dao = new BoardDAO();
       Board board = dao.getBoardById(id);
 

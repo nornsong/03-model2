@@ -120,7 +120,7 @@ public List<Board> getBoardList() {
 }
 
 // getBoard 메서드 수정 (작성자 이름 포함)
-public Board getBoard(int id) {
+    public Board getBoard(Long id) {
             String sql = "SELECT b.*, u.name as author_name FROM board b " +
                      "LEFT JOIN user u ON b.author_id = u.id " +
                      "WHERE b.id = ?";
@@ -217,7 +217,7 @@ public String execute(HttpServletRequest request, HttpServletResponse response) 
                 return null;
             }
 
-            int boardId = Integer.parseInt(request.getParameter("id"));
+            Long boardId = Long.parseLong(request.getParameter("id"));
             BoardDAO boardDAO = new BoardDAO();
             Board board = boardDAO.getBoard(boardId);
 

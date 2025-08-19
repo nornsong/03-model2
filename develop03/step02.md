@@ -239,7 +239,7 @@ public class ThumbnailGenerator {
 
 public class FileUpload {
     // 기존 필드들...
-    private int id;
+            private Long id;
     private int boardId;
     private String originalName;
     private String storedName;

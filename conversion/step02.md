@@ -125,7 +125,7 @@ public class BoardDAO {
         return jdbcTemplate.query(sql, boardRowMapper);
     }
 
-    public Board getBoardById(int id) {
+    public Board getBoardById(Long id) {
         String sql = "SELECT * FROM board WHERE id = ?";
         try {
             return jdbcTemplate.queryForObject(sql, boardRowMapper, id);
@@ -232,7 +232,7 @@ public class BoardUpdateCommand implements Command {
                     return "/board/list.jsp";
                 }
 
-                int id = Integer.parseInt(idStr);
+                Long id = Long.parseLong(idStr);
                 BoardDAO dao = new BoardDAO();
                 Board board = dao.getBoardById(id);
 
@@ -248,7 +248,7 @@ public class BoardUpdateCommand implements Command {
                 // POST 요청 - 수정 처리
                 request.setCharacterEncoding("UTF-8");
 
-                int id = Integer.parseInt(idStr);
+                Long id = Long.parseLong(idStr);
                 String title = request.getParameter("title");
                 String content = request.getParameter("content");
 
@@ -304,7 +304,7 @@ public class BoardDeleteCommand implements Command {
                 return "/board/list.jsp";
             }
 
-            int id = Integer.parseInt(idStr);
+            Long id = Long.parseLong(idStr);
 
             if ("true".equals(confirm)) {
                 // 삭제 확인됨 - 실제 삭제 처리
@@ -352,7 +352,7 @@ public void updateBoard(Board board) {
 }
 
 // 게시글 삭제 메서드도 추가
-public boolean deleteBoard(int id) {
+    public boolean deleteBoard(Long id) {
     String sql = "DELETE FROM board WHERE id = ?";
     int result = jdbcTemplate.update(sql, id);
     return result > 0;
