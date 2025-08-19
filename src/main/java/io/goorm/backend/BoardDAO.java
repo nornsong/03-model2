@@ -52,17 +52,19 @@ public class BoardDAO {
   /**
    * 게시글 작성
    */
-  public void insertBoard(Board board) {
+  public boolean insertBoard(Board board) {
     String sql = "INSERT INTO board (title, content, author, created_at) VALUES (?, ?, ?, NOW())";
-    jdbcTemplate.update(sql, board.getTitle(), board.getContent(), board.getAuthor());
+    int result = jdbcTemplate.update(sql, board.getTitle(), board.getContent(), board.getAuthor());
+    return result > 0;
   }
 
   /**
    * 게시글 수정
    */
-  public void updateBoard(Board board) {
+  public boolean updateBoard(Board board) {
     String sql = "UPDATE board SET title = ?, content = ? WHERE id = ?";
-    jdbcTemplate.update(sql, board.getTitle(), board.getContent(), board.getId());
+    int result = jdbcTemplate.update(sql, board.getTitle(), board.getContent(), board.getId());
+    return result > 0;
   }
 
   /**

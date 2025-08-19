@@ -134,9 +134,10 @@ public class BoardDAO {
         }
     }
 
-    public void insertBoard(Board board) {
+    public boolean insertBoard(Board board) {
         String sql = "INSERT INTO board (title, author, content, reg_date) VALUES (?, ?, ?, NOW())";
-        jdbcTemplate.update(sql, board.getTitle(), board.getAuthor(), board.getContent());
+        int result = jdbcTemplate.update(sql, board.getTitle(), board.getAuthor(), board.getContent());
+        return result > 0;
     }
 }
 ```
@@ -346,10 +347,11 @@ public List<Board> searchByTitle(String keyword) {
 }
 
 // 게시글 수정 메서드도 추가
-public void updateBoard(Board board) {
-    String sql = "UPDATE board SET title = ?, content = ? WHERE id = ?";
-    jdbcTemplate.update(sql, board.getTitle(), board.getContent(), board.getId());
-}
+    public boolean updateBoard(Board board) {
+        String sql = "UPDATE board SET title = ?, content = ? WHERE id = ?";
+        int result = jdbcTemplate.update(sql, board.getTitle(), board.getContent(), board.getId());
+        return result > 0;
+    }
 
 // 게시글 삭제 메서드도 추가
     public boolean deleteBoard(Long id) {

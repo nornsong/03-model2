@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletResponse;
  * 게시글 등록 처리 Servlet
  * Model 2 아키텍처의 컨트롤러 역할
  */
-//@WebServlet("/board/insert")
+// @WebServlet("/board/insert")
 public class BoardInsertServlet extends HttpServlet {
   private static final long serialVersionUID = 1L;
 
@@ -45,9 +45,9 @@ public class BoardInsertServlet extends HttpServlet {
 
       // DAO를 통해 게시글 등록
       BoardDAO dao = new BoardDAO();
-      int result = dao.insertBoard(board);
+      boolean success = dao.insertBoard(board);
 
-      if (result > 0) {
+      if (success) {
         // 성공 시 목록 페이지로 리다이렉트
         response.sendRedirect(request.getContextPath() + "/board/list");
       } else {

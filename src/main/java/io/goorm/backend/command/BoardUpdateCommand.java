@@ -51,10 +51,15 @@ public class BoardUpdateCommand implements Command {
         board.setContent(content);
 
         BoardDAO dao = new BoardDAO();
-        dao.updateBoard(board);
+        boolean success = dao.updateBoard(board);
 
-        // 수정 후 상세보기로 이동
-        response.sendRedirect("front?command=boardView&id=" + id);
+        if (success) {
+          // 수정 후 상세보기로 이동
+          response.sendRedirect("front?command=boardView&id=" + id);
+        } else {
+          request.setAttribute("error", "게시글 수정에 실패했습니다.");
+          return "/board/update.jsp";
+        }
         return null;
       }
 
