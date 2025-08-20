@@ -76,7 +76,27 @@ public class UploadConfig {
       bufferSize = Integer.parseInt(properties.getProperty("upload.buffer.size"));
 
     } catch (IOException e) {
-      throw new RuntimeException("업로드 설정 파일 로드 실패", e);
+      System.out.println("⚠️ Properties 파일 로드 실패 - 하드코딩된 경로 사용");
+      // Properties 파일 로드 실패 시 하드코딩된 경로 사용
+      rootPath = "D:/workspace-goorm-new/03-model2/uploads";
+      filesPath = "D:/workspace-goorm-new/03-model2/uploads/files";
+      imagesPath = "D:/workspace-goorm-new/03-model2/uploads/images";
+      webImagesPath = "/uploads/images";
+
+      // 기본 확장자 설정
+      allowedFileExtensions = Arrays.asList(".pdf", ".doc", ".docx", ".xls", ".xlsx", ".zip", ".rar", ".txt", ".csv");
+      allowedImageExtensions = Arrays.asList(".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp");
+
+      // 기본 크기 제한
+      maxFileSize = 10485760; // 10MB
+      maxImageSize = 5242880; // 5MB
+      bufferSize = 8192;
+
+      System.out.println("=== UploadConfig 하드코딩 경로 사용 ===");
+      System.out.println("루트 경로: " + rootPath);
+      System.out.println("파일 경로: " + filesPath);
+      System.out.println("이미지 경로: " + imagesPath);
+      System.out.println("================================");
     }
   }
 
