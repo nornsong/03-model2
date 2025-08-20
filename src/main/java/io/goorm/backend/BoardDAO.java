@@ -69,7 +69,7 @@ public class BoardDAO {
    * 게시글 작성
    */
   public boolean insertBoard(Board board) {
-    String sql = "INSERT INTO board (title, content, author, created_at) VALUES (?, ?, ?, NOW())";
+    String sql = "INSERT INTO board (title, content, author) VALUES (?, ?, ?)";
 
     try {
       // KeyHolder를 사용하여 생성된 ID 가져오기
