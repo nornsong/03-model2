@@ -55,7 +55,7 @@
         </c:if>
 
         <div class="bg-white shadow-md rounded-lg p-6">
-                         <form action="front?command=boardInsert" method="post" enctype="multipart/form-data" class="space-y-4">
+                         <form action="front?command=boardInsert" method="post" enctype="multipart/form-data" class="space-y-4" onsubmit="return validateForm()">
                 <div>
                     <label for="title" class="block text-sm font-medium text-gray-700 mb-2">제목</label>
                     <input type="text" id="title" name="title" required 
@@ -102,6 +102,31 @@
                 </div>
             </form>
         </div>
+        
+        <!-- 폼 검증 및 로깅 JavaScript -->
+        <script>
+            function validateForm() {
+                var title = document.getElementById('title').value;
+                var content = document.getElementById('content').value;
+                var files = document.getElementById('files').files;
+                
+                console.log('=== 폼 제출 로깅 ===');
+                console.log('제목:', title);
+                console.log('내용:', content);
+                console.log('파일 개수:', files.length);
+                for (var i = 0; i < files.length; i++) {
+                    console.log('파일 ' + (i+1) + ':', files[i].name, '크기:', files[i].size);
+                }
+                console.log('Content-Type:', document.querySelector('form').enctype);
+                console.log('========================');
+                
+                if (title.trim() === '') {
+                    alert('제목을 입력해주세요.');
+                    return false;
+                }
+                return true;
+            }
+        </script>
         
         <div class="mt-6 text-sm text-gray-600">
             <p>Model 2 아키텍처 - Servlet + JSP + JSTL</p>

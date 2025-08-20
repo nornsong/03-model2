@@ -21,9 +21,15 @@ public class BoardInsertCommand implements Command {
   @Override
   public String execute(HttpServletRequest request, HttpServletResponse response) {
     try {
+      System.out.println("=== BoardInsertCommand 실행 시작 ===");
+      System.out.println("요청 메서드: " + request.getMethod());
+      System.out.println("Content-Type: " + request.getContentType());
+      System.out.println("Character Encoding: " + request.getCharacterEncoding());
+
       // 로그인 확인
       HttpSession session = request.getSession(false);
       if (session == null || session.getAttribute("user") == null) {
+        System.out.println("로그인되지 않음 - 로그인 페이지로 리다이렉트");
         response.sendRedirect("front?command=login");
         return null;
       }
@@ -31,10 +37,26 @@ public class BoardInsertCommand implements Command {
       // POST 요청 처리
       request.setCharacterEncoding("UTF-8");
 
+      // multipart 요청인지 확인
+      String contentType = request.getContentType();
+      boolean isMultipart = contentType != null && contentType.startsWith("multipart/form-data");
+      System.out.println("Multipart 요청 여부: " + isMultipart);
+
+      // 파라미터 읽기 시도
       String title = request.getParameter("title");
       String content = request.getParameter("content");
 
+      System.out.println("=== 파라미터 읽기 결과 ===");
+      System.out.println("제목: [" + title + "]");
+      System.out.println("내용: [" + content + "]");
+      System.out.println("제목 null 여부: " + (title == null));
+      System.out.println("내용 null 여부: " + (content == null));
+      System.out.println("제목 길이: " + (title != null ? title.length() : "N/A"));
+      System.out.println("내용 길이: " + (content != null ? content.length() : "N/A"));
+      System.out.println("==========================");
+
       if (title == null || title.trim().isEmpty()) {
+        System.out.println("제목 벨리데이션 실패 - 제목이 비어있음");
         request.setAttribute("error", "제목을 입력해주세요.");
         request.setAttribute("title", title);
         request.setAttribute("content", content);
@@ -83,6 +105,8 @@ public class BoardInsertCommand implements Command {
 
     // multipart 요청인지 확인
     String contentType = request.getContentType();
+    System.out.println("파일 업로드 처리 - Content-Type: " + contentType);
+
     if (contentType == null || !contentType.startsWith("multipart/form-data")) {
       System.out.println("multipart 요청이 아님: " + contentType);
       return;
@@ -93,14 +117,30 @@ public class BoardInsertCommand implements Command {
       UploadConfig config = UploadConfig.getInstance();
       System.out.println("업로드 설정 로드 완료");
 
-      // 파일 파트들 가져오기
-      Collection<Part> fileParts = request.getParts();
-      System.out.println("파일 파트 개수: " + fileParts.size());
+      // 모든 Part 가져오기
+      Collection<Part> allParts = request.getParts();
+      System.out.println("전체 Part 개수: " + allParts.size());
 
-      for (Part part : fileParts) {
+      // Part별 상세 정보 로깅
+      for (Part part : allParts) {
+        System.out.println("--- Part 정보 ---");
+        System.out.println("Part 이름: " + part.getName());
+        System.out.println("Part 크기: " + part.getSize());
+        System.out.println("Part Content-Type: " + part.getContentType());
+        System.out.println("Part 헤더들:");
+        for (String headerName : part.getHeaderNames()) {
+          System.out.println("  " + headerName + ": " + part.getHeader(headerName));
+        }
+        System.out.println("---------------");
+      }
+
+      // 파일 파트들만 처리
+      int fileCount = 0;
+      for (Part part : allParts) {
         if (part.getName().equals("files") && part.getSize() > 0) {
+          fileCount++;
           String fileName = getSubmittedFileName(part);
-          System.out.println("처리 중인 파일: " + fileName);
+          System.out.println("처리 중인 파일 " + fileCount + ": " + fileName);
 
           if (fileName != null && !fileName.trim().isEmpty()) {
             // 파일 저장 및 DB 기록
@@ -109,6 +149,7 @@ public class BoardInsertCommand implements Command {
         }
       }
 
+      System.out.println("총 처리된 파일 개수: " + fileCount);
       System.out.println("=== 파일 업로드 처리 완료 ===");
 
     } catch (Exception e) {
