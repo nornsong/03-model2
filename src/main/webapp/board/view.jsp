@@ -100,6 +100,50 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">내용</label>
                         <div class="text-lg text-gray-900 whitespace-pre-wrap">${board.content}</div>
                     </div>
+                    
+                    <!-- 첨부파일 표시 -->
+                    <c:if test="${not empty board.attachments and board.attachments.size() > 0}">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">첨부파일</label>
+                            <div class="space-y-2">
+                                <c:forEach var="file" items="${board.attachments}">
+                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                        <div class="flex items-center space-x-3">
+                                            <!-- 파일 타입별 아이콘 -->
+                                            <c:choose>
+                                                <c:when test="${file.fileType.startsWith('image/')}">
+                                                    <!-- 이미지 파일: 직접 링크로 표시 -->
+                                                    <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                    <div>
+                                                        <p class="text-sm font-medium text-gray-900">${file.originalName}</p>
+                                                        <p class="text-xs text-gray-500">${file.fileSize} bytes</p>
+                                                        <!-- 이미지는 직접 링크로 접근 -->
+                                                        <a href="/uploads/images/${file.storedName}" target="_blank" 
+                                                           class="text-blue-600 hover:text-blue-800 text-xs">이미지 보기</a>
+                                                    </div>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <!-- 일반 파일: Java를 통한 다운로드 -->
+                                                    <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                    <div>
+                                                        <p class="text-sm font-medium text-gray-900">${file.originalName}</p>
+                                                        <p class="text-xs text-gray-500">${file.fileSize} bytes</p>
+                                                        <!-- 일반 파일은 Java 다운로드 -->
+                                                        <a href="front?command=fileDownload&id=${file.id}" 
+                                                           class="text-blue-600 hover:text-blue-800 text-xs">다운로드</a>
+                                                    </div>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </div>
+                                    </div>
+                                </c:forEach>
+                            </div>
+                        </div>
+                    </c:if>
                 </div>
             </div>
         </c:if>
