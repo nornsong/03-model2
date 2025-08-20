@@ -2,6 +2,7 @@ package io.goorm.backend;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import io.goorm.backend.config.DatabaseConfig;
 import java.util.List;
 import java.util.ArrayList;
 import java.sql.Timestamp;
@@ -10,7 +11,7 @@ public class FileUploadDAO {
   private JdbcTemplate jdbcTemplate;
 
   public FileUploadDAO() {
-    this.jdbcTemplate = new JdbcTemplate(DBConnection.getDataSource());
+    this.jdbcTemplate = new JdbcTemplate(DatabaseConfig.getDataSource());
   }
 
   // 파일 업로드 정보 저장
