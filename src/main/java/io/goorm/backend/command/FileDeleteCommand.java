@@ -59,9 +59,19 @@ public class FileDeleteCommand implements Command {
       }
 
     } catch (NumberFormatException e) {
-      return sendErrorResponse(response, "잘못된 파일 ID입니다.");
+      try {
+        return sendErrorResponse(response, "잘못된 파일 ID입니다.");
+      } catch (IOException ioException) {
+        // IOException 발생 시 기본 에러 페이지로 리다이렉트
+        return "/error.jsp";
+      }
     } catch (Exception e) {
-      return sendErrorResponse(response, "파일 삭제 중 오류가 발생했습니다: " + e.getMessage());
+      try {
+        return sendErrorResponse(response, "파일 삭제 중 오류가 발생했습니다: " + e.getMessage());
+      } catch (IOException ioException) {
+        // IOException 발생 시 기본 에러 페이지로 리다이렉트
+        return "/error.jsp";
+      }
     }
   }
 
