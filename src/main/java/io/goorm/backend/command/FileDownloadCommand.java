@@ -67,6 +67,16 @@ public class FileDownloadCommand implements Command {
 
     // 업로드 루트 경로 검증 (보안) - properties에서 읽어오기
     String uploadRoot = UploadConfig.getInstance().getRootPath();
+
+    // 디버깅을 위한 로깅
+    System.out.println("=== FileDownloadCommand 디버깅 ===");
+    System.out.println("요청된 파일 경로: " + filePath);
+    System.out.println("업로드 루트 경로: " + uploadRoot);
+    System.out.println("정규화된 경로: " + path.normalize());
+    System.out.println("루트 경로 Path: " + Paths.get(uploadRoot));
+    System.out.println("경로가 루트로 시작하는가: " + path.normalize().startsWith(Paths.get(uploadRoot)));
+    System.out.println("================================");
+
     if (!path.normalize().startsWith(Paths.get(uploadRoot))) {
       throw new SecurityException("허용되지 않는 파일 경로입니다.");
     }

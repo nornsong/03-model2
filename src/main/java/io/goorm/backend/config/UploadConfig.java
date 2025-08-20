@@ -54,6 +54,15 @@ public class UploadConfig {
       imagesPath = properties.getProperty("upload.images.path");
       webImagesPath = properties.getProperty("upload.web.images.path");
 
+      // 디버깅을 위한 로깅
+      System.out.println("=== UploadConfig 디버깅 ===");
+      System.out.println("Properties 파일 로드 완료");
+      System.out.println("루트 경로: " + rootPath);
+      System.out.println("파일 경로: " + filesPath);
+      System.out.println("이미지 경로: " + imagesPath);
+      System.out.println("웹 이미지 경로: " + webImagesPath);
+      System.out.println("==========================");
+
       // 확장자 설정
       String fileExts = properties.getProperty("upload.allowed.files");
       String imageExts = properties.getProperty("upload.allowed.images");

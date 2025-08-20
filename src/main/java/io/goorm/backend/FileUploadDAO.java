@@ -56,7 +56,21 @@ public class FileUploadDAO {
 
     try {
       List<FileUpload> results = jdbcTemplate.query(sql, fileUploadRowMapper, fileId);
-      return results.isEmpty() ? null : results.get(0);
+      FileUpload file = results.isEmpty() ? null : results.get(0);
+
+      // 디버깅을 위한 로깅
+      if (file != null) {
+        System.out.println("=== FileUploadDAO 디버깅 ===");
+        System.out.println("파일 ID: " + fileId);
+        System.out.println("파일 경로: " + file.getFilePath());
+        System.out.println("파일 타입: " + file.getFileType());
+        System.out.println("저장된 파일명: " + file.getStoredFilename());
+        System.out.println("===========================");
+      } else {
+        System.out.println("파일을 찾을 수 없음: " + fileId);
+      }
+
+      return file;
     } catch (Exception e) {
       e.printStackTrace();
       return null;
