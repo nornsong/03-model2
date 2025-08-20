@@ -26,7 +26,7 @@
                         <c:when test="${not empty sessionScope.user}">
                             <!-- 로그인한 상태 -->
                             <span class="text-gray-700 text-sm">
-                                안녕하세요, <span class="font-semibold text-blue-600">${sessionScope.userName}</span>님!
+                                안녕하세요, <span class="font-semibold text-blue-600">${sessionScope.user.name}</span>님!
                             </span>
                             <a href="front?command=logout" 
                                class="text-gray-700 hover:text-red-600 px-3 py-2 rounded-md text-sm font-medium">

@@ -2,33 +2,43 @@ package io.goorm.backend.command;
 
 import io.goorm.backend.Board;
 import io.goorm.backend.BoardDAO;
+import io.goorm.backend.User;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 public class BoardInsertCommand implements Command {
 
   @Override
   public String execute(HttpServletRequest request, HttpServletResponse response) {
     try {
+      // 로그인 확인
+      HttpSession session = request.getSession(false);
+      if (session == null || session.getAttribute("user") == null) {
+        response.sendRedirect("front?command=login");
+        return null;
+      }
+
       // POST 요청 처리
       request.setCharacterEncoding("UTF-8");
 
       String title = request.getParameter("title");
-      String author = request.getParameter("author");
       String content = request.getParameter("content");
 
       if (title == null || title.trim().isEmpty()) {
         request.setAttribute("error", "제목을 입력해주세요.");
         request.setAttribute("title", title);
-        request.setAttribute("author", author);
         request.setAttribute("content", content);
         return "/board/write.jsp";
       }
 
+      // 세션에서 사용자 정보 가져오기
+      User user = (User) session.getAttribute("user");
+
       Board board = new Board();
       board.setTitle(title);
-      board.setAuthor(author);
+      board.setAuthor(user.getId().toString()); // 세션의 사용자 ID 사용
       board.setContent(content);
 
       BoardDAO dao = new BoardDAO();

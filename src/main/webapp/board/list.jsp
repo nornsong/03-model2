@@ -41,11 +41,14 @@
             </div>
         </div>
         
-        <div class="mb-4">
-            <a href="front?command=boardWrite" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-                글쓰기
-            </a>
-        </div>
+        <!-- 글쓰기 버튼 - 로그인한 사용자에게만 표시 -->
+        <c:if test="${not empty sessionScope.user}">
+            <div class="mb-4">
+                <a href="front?command=boardWrite" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                    글쓰기
+                </a>
+            </div>
+        </c:if>
 
         <!-- 에러 메시지 표시 -->
         <c:if test="${not empty error}">
@@ -78,7 +81,7 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         <a href="front?command=boardView&id=${board.id}" class="text-blue-600 hover:text-blue-900">${board.title}</a>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${board.author}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${board.authorName}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${board.createdAt}</td>
                                 </tr>
                             </c:forEach>

@@ -45,15 +45,24 @@
             <a href="front?command=boardList" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2">
                 목록으로
             </a>
-            <a href="front?command=boardWrite" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mr-2">
-                글쓰기
-            </a>
-            <a href="front?command=boardUpdate&id=${board.id}" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded mr-2">
-                수정
-            </a>
-            <a href="front?command=boardDelete&id=${board.id}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
-                삭제
-            </a>
+            
+            <!-- 글쓰기 버튼 - 로그인한 사용자에게만 표시 -->
+            <c:if test="${not empty sessionScope.user}">
+                <a href="front?command=boardWrite" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mr-2">
+                    글쓰기
+                </a>
+            </c:if>
+            
+            <!-- 수정/삭제 버튼 - 본인이 작성한 글에만 표시 -->
+            <c:if test="${not empty sessionScope.user and sessionScope.user.id == board.author}">
+                <a href="front?command=boardUpdate&id=${board.id}" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded mr-2">
+                    수정
+                </a>
+                <a href="front?command=boardDelete&id=${board.id}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                   onclick="return confirm('정말 삭제하시겠습니까?')">
+                    삭제
+                </a>
+            </c:if>
         </div>
 
         <!-- 에러 메시지 표시 -->
@@ -79,7 +88,7 @@
                     
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">작성자</label>
-                        <div class="text-lg text-gray-900">${board.author}</div>
+                        <div class="text-lg text-gray-900">${board.authorName}</div>
                     </div>
                     
                     <div>

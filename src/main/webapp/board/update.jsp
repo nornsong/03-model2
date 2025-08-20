@@ -73,8 +73,9 @@
                 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">작성자</label>
-                    <input type="text" value="${board.author}" readonly 
+                    <input type="text" value="${board.authorName}" readonly 
                            class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500">
+                    <input type="hidden" name="author" value="${board.author}">
                 </div>
                 
                 <div>

@@ -12,7 +12,8 @@ public class Board {
   private Long id;
   private String title;
   private String content;
-  private String author;
+  private String author; // 사용자 ID (문자열)
+  private String authorName; // 사용자 이름 (JOIN으로 가져옴)
   private Timestamp createdAt;
   private List<FileUpload> attachments;
 
@@ -45,6 +46,10 @@ public class Board {
     return author;
   }
 
+  public String getAuthorName() {
+    return authorName;
+  }
+
   public Timestamp getCreatedAt() {
     return createdAt;
   }
@@ -68,6 +73,10 @@ public class Board {
 
   public void setAuthor(String author) {
     this.author = author;
+  }
+
+  public void setAuthorName(String authorName) {
+    this.authorName = authorName;
   }
 
   public void setCreatedAt(Timestamp createdAt) {

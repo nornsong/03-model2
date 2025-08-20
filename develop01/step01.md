@@ -126,17 +126,17 @@ public class UserDAO {
          }
      }
 
-    // RowMapper 정의
-    private RowMapper<User> userRowMapper = (rs, rowNum) -> {
-        User user = new User();
-        user.setId(rs.getInt("id"));
-        user.setUsername(rs.getString("username"));
-        user.setPassword(rs.getString("password"));
-        user.setName(rs.getString("name"));
-        user.setEmail(rs.getString("email"));
-        user.setRegDate(rs.getTimestamp("reg_date"));
-        return user;
-    };
+         // RowMapper 정의
+     private RowMapper<User> userRowMapper = (rs, rowNum) -> {
+         User user = new User();
+         user.setId(rs.getLong("id"));
+         user.setUsername(rs.getString("username"));
+         user.setPassword(rs.getString("password"));
+         user.setName(rs.getString("name"));
+         user.setEmail(rs.getString("email"));
+         user.setRegDate(rs.getTimestamp("reg_date"));
+         return user;
+     };
 }
 ```
 

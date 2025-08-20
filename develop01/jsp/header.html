@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>게시판 헤더</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <!-- 헤더 영역 -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- 로고/제목 -->
+                <div class="flex items-center">
+                    <h1 class="text-xl font-semibold text-gray-900">게시판 시스템</h1>
+                </div>
+
+                <!-- 사용자 상태 표시 -->
+                <div class="flex items-center space-x-4">
+                    <!-- 로그인하지 않은 상태 -->
+                    <div id="guest-menu" class="flex items-center space-x-4">
+                        <a href="front?command=login" 
+                           class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
+                            로그인
+                        </a>
+                        <a href="front?command=signup" 
+                           class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                            회원가입
+                        </a>
+                    </div>
+
+                    <!-- 로그인한 상태 -->
+                    <div id="user-menu" class="hidden flex items-center space-x-4">
+                        <span class="text-gray-700 text-sm">
+                            안녕하세요, <span id="user-name" class="font-semibold text-blue-600">사용자</span>님!
+                        </span>
+                        <a href="front?command=logout" 
+                           class="text-gray-700 hover:text-red-600 px-3 py-2 rounded-md text-sm font-medium">
+                            로그아웃
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- JavaScript for dynamic header -->
+    <script>
+        // 사용자 로그인 상태에 따른 헤더 표시
+        function updateHeader() {
+            const guestMenu = document.getElementById('guest-menu');
+            const userMenu = document.getElementById('user-menu');
+            const userName = document.getElementById('user-name');
+            
+            // 세션에서 사용자 정보 확인 (실제로는 서버에서 처리)
+            const isLoggedIn = false; // 예시
+            
+            if (isLoggedIn) {
+                guestMenu.classList.add('hidden');
+                userMenu.classList.remove('hidden');
+                // userName.textContent = '실제 사용자 이름';
+            } else {
+                guestMenu.classList.remove('hidden');
+                userMenu.classList.add('hidden');
+            }
+        }
+        
+        // 페이지 로드 시 헤더 업데이트
+        document.addEventListener('DOMContentLoaded', updateHeader);
+    </script>
+</body>
+</html>

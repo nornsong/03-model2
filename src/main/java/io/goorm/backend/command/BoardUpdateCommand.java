@@ -2,9 +2,11 @@ package io.goorm.backend.command;
 
 import io.goorm.backend.Board;
 import io.goorm.backend.BoardDAO;
+import io.goorm.backend.User;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 public class BoardUpdateCommand implements Command {
 
@@ -27,6 +29,20 @@ public class BoardUpdateCommand implements Command {
         if (board == null) {
           request.setAttribute("error", "존재하지 않는 게시글입니다.");
           return "/board/list.jsp";
+        }
+
+        // 로그인 확인
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+          response.sendRedirect("front?command=login");
+          return null;
+        }
+
+        // 권한 확인 (본인이 작성한 글만 수정 가능)
+        User user = (User) session.getAttribute("user");
+        if (!board.getAuthor().equals(user.getId().toString())) {
+          request.setAttribute("error", "본인이 작성한 글만 수정할 수 있습니다.");
+          return "/board/view.jsp";
         }
 
         request.setAttribute("board", board);

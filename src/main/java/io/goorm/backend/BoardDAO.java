@@ -26,6 +26,7 @@ public class BoardDAO {
     board.setTitle(rs.getString("title"));
     board.setContent(rs.getString("content"));
     board.setAuthor(rs.getString("author"));
+    board.setAuthorName(rs.getString("author_name")); // JOIN으로 가져온 사용자 이름
     board.setCreatedAt(rs.getTimestamp("created_at"));
     return board;
   };
@@ -34,7 +35,9 @@ public class BoardDAO {
    * 게시글 목록 조회
    */
   public List<Board> getBoardList() {
-    String sql = "SELECT * FROM board ORDER BY created_at DESC";
+    String sql = "SELECT b.*, u.name as author_name FROM board b " +
+        "LEFT JOIN users u ON b.author = u.id " +
+        "ORDER BY b.created_at DESC";
     return jdbcTemplate.query(sql, boardRowMapper);
   }
 
@@ -42,7 +45,9 @@ public class BoardDAO {
    * 게시글 상세 조회
    */
   public Board getBoardById(Long id) {
-    String sql = "SELECT * FROM board WHERE id = ?";
+    String sql = "SELECT b.*, u.name as author_name FROM board b " +
+        "LEFT JOIN users u ON b.author = u.id " +
+        "WHERE b.id = ?";
     try {
       Board board = jdbcTemplate.queryForObject(sql, boardRowMapper, id);
       if (board != null) {
