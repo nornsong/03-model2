@@ -51,17 +51,32 @@ public class BoardInsertCommand implements Command {
         System.out.println("Multipart 요청 - Part API로 파라미터 읽기");
         try {
           Collection<Part> allParts = request.getParts();
+          System.out.println("getParts() 호출 결과 - Part 개수: " + allParts.size());
+
+          if (allParts.isEmpty()) {
+            System.out.println("⚠️ 경고: getParts()가 빈 컬렉션을 반환했습니다!");
+            System.out.println("이는 보통 @MultipartConfig 어노테이션이 없거나 설정이 잘못되었을 때 발생합니다.");
+          }
+
           for (Part part : allParts) {
+            System.out.println("--- Part 처리 중 ---");
+            System.out.println("Part 이름: [" + part.getName() + "]");
+            System.out.println("Part 크기: " + part.getSize());
+            System.out.println("Part Content-Type: [" + part.getContentType() + "]");
+
             if (part.getName().equals("title")) {
               title = getPartContent(part);
-              System.out.println("Part에서 title 읽기: [" + title + "]");
+              System.out.println("✅ Part에서 title 읽기 성공: [" + title + "]");
             } else if (part.getName().equals("content")) {
               content = getPartContent(part);
-              System.out.println("Part에서 content 읽기: [" + content + "]");
+              System.out.println("✅ Part에서 content 읽기 성공: [" + content + "]");
+            } else {
+              System.out.println("❓ 다른 Part: " + part.getName());
             }
+            System.out.println("---------------");
           }
         } catch (Exception e) {
-          System.out.println("Part API로 파라미터 읽기 실패: " + e.getMessage());
+          System.out.println("❌ Part API로 파라미터 읽기 실패: " + e.getMessage());
           e.printStackTrace();
         }
       } else {

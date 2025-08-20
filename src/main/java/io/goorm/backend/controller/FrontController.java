@@ -6,12 +6,17 @@ import io.goorm.backend.command.Command;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @WebServlet("/front")
+@MultipartConfig(maxFileSize = 10485760, // 10MB
+    maxRequestSize = 52428800, // 50MB
+    fileSizeThreshold = 2097152 // 2MB
+)
 public class FrontController extends HttpServlet {
 
   private HandlerMapping handlerMapping;
