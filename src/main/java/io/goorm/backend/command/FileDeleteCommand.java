@@ -5,9 +5,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.PrintWriter;
-import com.google.gson.Gson;
-import java.util.HashMap;
-import java.util.Map;
 import io.goorm.backend.FileUpload;
 import io.goorm.backend.FileUploadDAO;
 import io.goorm.backend.User;
@@ -72,12 +69,8 @@ public class FileDeleteCommand implements Command {
     response.setContentType("application/json;charset=UTF-8");
     response.setCharacterEncoding("UTF-8");
 
-    Map<String, Object> result = new HashMap<>();
-    result.put("success", true);
-    result.put("message", message);
-
-    Gson gson = new Gson();
-    String jsonResponse = gson.toJson(result);
+    // 간단한 JSON 문자열 생성 (Gson 없이)
+    String jsonResponse = "{\"success\":true,\"message\":\"" + escapeJson(message) + "\"}";
 
     PrintWriter out = response.getWriter();
     out.print(jsonResponse);
@@ -90,17 +83,24 @@ public class FileDeleteCommand implements Command {
     response.setContentType("application/json;charset=UTF-8");
     response.setCharacterEncoding("UTF-8");
 
-    Map<String, Object> result = new HashMap<>();
-    result.put("success", false);
-    result.put("message", message);
-
-    Gson gson = new Gson();
-    String jsonResponse = gson.toJson(result);
+    // 간단한 JSON 문자열 생성 (Gson 없이)
+    String jsonResponse = "{\"success\":false,\"message\":\"" + escapeJson(message) + "\"}";
 
     PrintWriter out = response.getWriter();
     out.print(jsonResponse);
     out.flush();
 
     return null; // AJAX 응답이므로 null 반환
+  }
+
+  // JSON 문자열에서 특수문자 이스케이프 처리
+  private String escapeJson(String text) {
+    if (text == null)
+      return "";
+    return text.replace("\\", "\\\\")
+        .replace("\"", "\\\"")
+        .replace("\n", "\\n")
+        .replace("\r", "\\r")
+        .replace("\t", "\\t");
   }
 }

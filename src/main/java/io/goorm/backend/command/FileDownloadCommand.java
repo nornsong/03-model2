@@ -2,6 +2,7 @@ package io.goorm.backend.command;
 
 import io.goorm.backend.FileUpload;
 import io.goorm.backend.FileUploadDAO;
+import io.goorm.backend.config.UploadConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
