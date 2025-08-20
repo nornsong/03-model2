@@ -37,44 +37,6 @@
     </filter-mapping>
 
 
-    <!-- Servlet 매핑 (web.xml 방식 - @WebServlet과 동일) -->
-    <servlet>
-        <servlet-name>BoardListServlet</servlet-name>
-        <servlet-class>io.goorm.backend.controller.BoardListServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>BoardListServlet</servlet-name>
-        <url-pattern>/board/list</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>BoardWriteServlet</servlet-name>
-        <servlet-class>io.goorm.backend.controller.BoardWriteServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>BoardWriteServlet</servlet-name>
-        <url-pattern>/board/write</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>BoardInsertServlet</servlet-name>
-        <servlet-class>io.goorm.backend.controller.BoardInsertServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>BoardInsertServlet</servlet-name>
-        <url-pattern>/board/insert</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>BoardViewServlet</servlet-name>
-        <servlet-class>io.goorm.backend.controller.BoardViewServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>BoardViewServlet</servlet-name>
-        <url-pattern>/board/view</url-pattern>
-    </servlet-mapping>
-
-
     <!-- 세션 설정 -->
     <session-config>
         <session-timeout>30</session-timeout>
