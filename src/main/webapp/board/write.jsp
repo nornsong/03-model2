@@ -55,7 +55,7 @@
         </c:if>
 
         <div class="bg-white shadow-md rounded-lg p-6">
-            <form action="front?command=boardInsert" method="post" class="space-y-4">
+                         <form action="front?command=boardInsert" method="post" enctype="multipart/form-data" class="space-y-4">
                 <div>
                     <label for="title" class="block text-sm font-medium text-gray-700 mb-2">제목</label>
                     <input type="text" id="title" name="title" required 
@@ -71,11 +71,46 @@
                     <input type="hidden" name="author" value="${sessionScope.user.id}">
                 </div>
                 
-                <div>
-                    <label for="content" class="block text-sm font-medium text-gray-700 mb-2">내용</label>
-                    <textarea id="content" name="content" rows="8" required 
-                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">${param.content}</textarea>
-                </div>
+                                 <div>
+                     <label for="content" class="block text-sm font-medium text-gray-700 mb-2">내용</label>
+                     <textarea id="content" name="content" rows="8" required 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">${param.content}</textarea>
+                 </div>
+                 
+                 <!-- 파일 업로드 섹션 -->
+                 <div>
+                     <label class="block text-sm font-medium text-gray-700 mb-2">
+                         첨부파일 <span class="text-gray-500">(선택사항)</span>
+                     </label>
+                     
+                     <!-- 파일 업로드 영역 -->
+                     <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors" 
+                          id="dropZone">
+                         <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                         </svg>
+                         <p class="text-sm text-gray-600 mb-2">
+                             <span class="font-medium text-blue-600">클릭하여 파일 선택</span> 또는 여기로 파일을 끌어다 놓으세요
+                         </p>
+                         <p class="text-xs text-gray-500">
+                             최대 5개 파일, 개별 파일 10MB, 전체 50MB까지 업로드 가능
+                         </p>
+                         <input type="file" id="fileInput" name="files" multiple 
+                                accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.txt,.zip,.rar"
+                                class="hidden">
+                     </div>
+
+                     <!-- 업로드된 파일 목록 -->
+                     <div id="fileList" class="mt-4 space-y-2 hidden">
+                         <h4 class="text-sm font-medium text-gray-700">업로드할 파일 목록:</h4>
+                         <div id="fileItems" class="space-y-2"></div>
+                     </div>
+
+                     <!-- 파일 제한 안내 -->
+                     <div class="mt-2 text-xs text-gray-500">
+                         <p>허용 파일 형식: 이미지(JPG, PNG, GIF), 문서(PDF, DOC, TXT), 압축파일(ZIP, RAR)</p>
+                     </div>
+                 </div>
                 
                 <div class="flex justify-end space-x-3">
                     <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">

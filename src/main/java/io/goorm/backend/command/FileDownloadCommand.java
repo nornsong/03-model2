@@ -64,8 +64,8 @@ public class FileDownloadCommand implements Command {
   private Path validateAndGetFilePath(String filePath) {
     Path path = Paths.get(filePath);
 
-    // 업로드 루트 경로 검증 (보안)
-    String uploadRoot = "D:/workspace-goorm-new/03-model2/uploads";
+    // 업로드 루트 경로 검증 (보안) - properties에서 읽어오기
+    String uploadRoot = UploadConfig.getUploadRootPath();
     if (!path.normalize().startsWith(Paths.get(uploadRoot))) {
       throw new SecurityException("허용되지 않는 파일 경로입니다.");
     }
