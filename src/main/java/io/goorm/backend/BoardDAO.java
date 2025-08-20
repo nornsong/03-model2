@@ -6,6 +6,11 @@ import io.goorm.backend.config.DatabaseConfig;
 
 import java.util.List;
 import java.util.ArrayList;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
+import java.sql.Connection;
 
 /**
  * Board Data Access Object
@@ -65,8 +70,32 @@ public class BoardDAO {
    */
   public boolean insertBoard(Board board) {
     String sql = "INSERT INTO board (title, content, author, created_at) VALUES (?, ?, ?, NOW())";
-    int result = jdbcTemplate.update(sql, board.getTitle(), board.getContent(), board.getAuthor());
-    return result > 0;
+
+    try {
+      // KeyHolder를 사용하여 생성된 ID 가져오기
+      KeyHolder keyHolder = new GeneratedKeyHolder();
+      int result = jdbcTemplate.update(connection -> {
+        PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+        ps.setString(1, board.getTitle());
+        ps.setString(2, board.getContent());
+        ps.setString(3, board.getAuthor());
+        return ps;
+      }, keyHolder);
+
+      if (result > 0) {
+        // 생성된 ID를 board 객체에 설정
+        Number generatedId = keyHolder.getKey();
+        if (generatedId != null) {
+          board.setId(generatedId.longValue());
+          System.out.println("생성된 게시글 ID: " + board.getId());
+        }
+        return true;
+      }
+      return false;
+    } catch (Exception e) {
+      e.printStackTrace();
+      return false;
+    }
   }
 
   /**
