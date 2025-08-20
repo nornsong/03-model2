@@ -10,7 +10,7 @@
 ## 🏗️ 아키텍처 개요
 
 ```
-사용자 → JSP 삭제 버튼 → FileDeleteCommand → 권한 검증 → FileUploadDAO → 파일 시스템
+사용자 → JSP 삭제 버튼 → FrontController → FileDeleteCommand → 권한 검증 → FileUploadDAO → 파일 시스템
                 ↓
             세션 기반 사용자 확인
                 ↓
@@ -32,18 +32,14 @@ import io.goorm.backend.FileUpload;
 import io.goorm.backend.FileUploadDAO;
 import io.goorm.backend.User;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-@WebServlet("/file/delete")
-public class FileDeleteCommand extends HttpServlet {
+public class FileDeleteCommand implements Command {
     private FileUploadDAO fileUploadDAO;
 
     public FileDeleteCommand() {
@@ -51,19 +47,14 @@ public class FileDeleteCommand extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-
-        request.setCharacterEncoding("UTF-8");
-        response.setContentType("application/json;charset=UTF-8");
+    public String execute(HttpServletRequest request, HttpServletResponse response) {
 
         try {
             // 로그인 확인
             HttpSession session = request.getSession(false);
             if (session == null || session.getAttribute("user") == null) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("{\"success\": false, \"message\": \"로그인이 필요합니다.\"}");
-                return;
+                request.setAttribute("error", "로그인이 필요합니다.");
+                return "board/view.jsp";
             }
 
             User user = (User) session.getAttribute("user");
@@ -84,9 +75,8 @@ public class FileDeleteCommand extends HttpServlet {
 
             // 권한 확인 (파일 소유자만 삭제 가능)
             if (!hasPermissionToDelete(user, fileUpload)) {
-                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                response.getWriter().write("{\"success\": false, \"message\": \"파일을 삭제할 권한이 없습니다.\"}");
-                return;
+                request.setAttribute("error", "파일을 삭제할 권한이 없습니다.");
+                return "board/view.jsp";
             }
 
             // 물리적 파일 삭제
@@ -99,13 +89,14 @@ public class FileDeleteCommand extends HttpServlet {
                 throw new ServletException("데이터베이스에서 파일 정보 삭제에 실패했습니다.");
             }
 
-            // 성공 응답
-            response.getWriter().write("{\"success\": true, \"message\": \"파일이 성공적으로 삭제되었습니다.\"}");
+            // 성공 메시지 설정
+            request.setAttribute("message", "파일이 성공적으로 삭제되었습니다.");
+            return "board/view.jsp";
 
         } catch (Exception e) {
             e.printStackTrace();
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write("{\"success\": false, \"message\": \"" + e.getMessage() + "\"}");
+            request.setAttribute("error", "파일 삭제 중 오류가 발생했습니다: " + e.getMessage());
+            return "board/view.jsp";
         }
     }
 
@@ -265,13 +256,12 @@ function deleteFile(fileId) {
             },
             body: 'fileId=' + fileId
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
+        .then(response => {
+            if (response.ok) {
                 alert('파일이 삭제되었습니다.');
                 location.reload(); // 페이지 새로고침
             } else {
-                alert('파일 삭제 실패: ' + data.message);
+                alert('파일 삭제 실패');
             }
         })
         .catch(error => {

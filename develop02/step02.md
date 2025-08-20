@@ -10,7 +10,7 @@
 ## 🏗️ 아키텍처 개요
 
 ```
-사용자 → JSP 다운로드 링크 → FileDownloadCommand → FileUploadDAO → 파일 시스템
+사용자 → JSP 다운로드 링크 → FrontController → FileDownloadCommand → FileUploadDAO → 파일 시스템
                 ↓
             보안 검증 (권한 확인)
                 ↓
@@ -40,8 +40,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-@WebServlet("/file/download")
-public class FileDownloadCommand extends HttpServlet {
+public class FileDownloadCommand implements Command {
     private FileUploadDAO fileUploadDAO;
 
     public FileDownloadCommand() {
@@ -49,8 +48,7 @@ public class FileDownloadCommand extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    public String execute(HttpServletRequest request, HttpServletResponse response) {
 
         try {
             // 파일 ID 파라미터
@@ -81,10 +79,12 @@ public class FileDownloadCommand extends HttpServlet {
 
         } catch (Exception e) {
             e.printStackTrace();
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.setContentType("text/html;charset=UTF-8");
-            response.getWriter().write("<h3>파일 다운로드 중 오류가 발생했습니다.</h3><p>" + e.getMessage() + "</p>");
+            request.setAttribute("error", "파일 다운로드 중 오류가 발생했습니다: " + e.getMessage());
+            return "board/view.jsp";
         }
+
+        // 파일 다운로드는 직접 스트림으로 처리하므로 null 반환
+        return null;
     }
 
     private Path validateAndGetFilePath(String filePath) throws ServletException {

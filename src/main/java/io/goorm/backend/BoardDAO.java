@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.RowMapper;
 import io.goorm.backend.config.DatabaseConfig;
 
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Board Data Access Object
@@ -43,7 +44,12 @@ public class BoardDAO {
   public Board getBoardById(Long id) {
     String sql = "SELECT * FROM board WHERE id = ?";
     try {
-      return jdbcTemplate.queryForObject(sql, boardRowMapper, id);
+      Board board = jdbcTemplate.queryForObject(sql, boardRowMapper, id);
+      if (board != null) {
+        // 첨부파일 정보도 함께 조회
+        loadAttachments(board);
+      }
+      return board;
     } catch (Exception e) {
       return null;
     }
@@ -83,5 +89,19 @@ public class BoardDAO {
     String sql = "SELECT * FROM board WHERE title LIKE ? ORDER BY created_at DESC";
     String searchKeyword = "%" + keyword + "%";
     return jdbcTemplate.query(sql, boardRowMapper, searchKeyword);
+  }
+
+  /**
+   * 게시글의 첨부파일 정보 로드
+   */
+  private void loadAttachments(Board board) {
+    try {
+      FileUploadDAO fileUploadDAO = new FileUploadDAO();
+      List<FileUpload> attachments = fileUploadDAO.getFilesByBoardId(board.getId());
+      board.setAttachments(attachments);
+    } catch (Exception e) {
+      e.printStackTrace();
+      board.setAttachments(new ArrayList<>());
+    }
   }
 }

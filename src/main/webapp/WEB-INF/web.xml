@@ -26,6 +26,16 @@
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 
+    <!-- XSS 방지 필터 -->
+    <filter>
+        <filter-name>XSSFilter</filter-name>
+        <filter-class>io.goorm.backend.filter.XSSFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>XSSFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
 
     <!-- Servlet 매핑 (web.xml 방식 - @WebServlet과 동일) -->
     <servlet>

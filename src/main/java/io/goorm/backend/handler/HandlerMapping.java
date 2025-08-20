@@ -20,6 +20,9 @@ public class HandlerMapping {
     commandMap.put("signup", new SignupCommand());
     commandMap.put("login", new LoginCommand());
     commandMap.put("logout", new LogoutCommand());
+    commandMap.put("fileUpload", new FileUploadCommand());
+    commandMap.put("fileDownload", new FileDownloadCommand());
+    commandMap.put("fileDelete", new FileDeleteCommand());
   }
 
   public Command getCommand(String commandName) {

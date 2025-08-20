@@ -11,7 +11,7 @@
 ## 🏗️ 아키텍처 개요
 
 ```
-사용자 → JSP 폼 → FileUploadServlet → 파일 타입 분류 → 적절한 폴더 저장
+사용자 → JSP 폼 → FrontController → FileUploadCommand → 파일 타입 분류 → 적절한 폴더 저장
                 ↓
             확장자 검증 (화이트리스트)
                 ↓
@@ -591,58 +591,155 @@ public class BoardDAO {
 }
 ```
 
-### 7단계: 파일 업로드 Servlet 생성
+### 7단계: 파일 업로드 유틸리티 클래스 생성
 
-**파일 위치**: `src/main/java/io/goorm/backend/controller/FileUploadServlet.java`
+#### A. 파일 검증 유틸리티
+
+**파일 위치**: `src/main/java/io/goorm/backend/util/UploadValidator.java`
 
 ```java
-package io.goorm.backend.controller;
+package io.goorm.backend.util;
 
-import io.goorm.backend.Board;
-import io.goorm.backend.FileUpload;
-import io.goorm.backend.FileUploadDAO;
 import io.goorm.backend.config.UploadConfig;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.MultipartConfig;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
-import java.io.IOException;
+
+public class UploadValidator {
+    private UploadConfig uploadConfig;
+
+    public UploadValidator() {
+        this.uploadConfig = UploadConfig.getInstance();
+    }
+
+    // 파일 확장자 검증
+    public boolean isValidFileExtension(String filename) {
+        String extension = FileUtils.getFileExtension(filename).toLowerCase();
+        return uploadConfig.getAllowedFileExtensions().contains(extension) ||
+               uploadConfig.getAllowedImageExtensions().contains(extension);
+    }
+
+    // 파일 크기 검증
+    public boolean isValidFileSize(long fileSize, String filename) {
+        if (uploadConfig.isImageFile(filename)) {
+            return fileSize <= uploadConfig.getMaxImageSize();
+        } else {
+            return fileSize <= uploadConfig.getMaxFileSize();
+        }
+    }
+
+    // MIME 타입 검증
+    public boolean isValidMimeType(String contentType, String filename) {
+        if (uploadConfig.isImageFile(filename)) {
+            return contentType.startsWith("image/");
+        } else {
+            return !contentType.startsWith("image/");
+        }
+    }
+
+    // 전체 파일 검증
+    public boolean isValidFile(Part part, String filename) {
+        return isValidFileExtension(filename) &&
+               isValidFileSize(part.getSize(), filename) &&
+               isValidMimeType(part.getContentType(), filename);
+    }
+}
+```
+
+#### B. 파일 처리 유틸리티
+
+**파일 위치**: `src/main/java/io/goorm/backend/util/FileUtils.java`
+
+```java
+package io.goorm.backend.util;
+
+import javax.servlet.http.Part;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Timestamp;
 import java.util.UUID;
 
-@WebServlet("/file/upload")
+public class FileUtils {
+
+    // Part에서 파일명 추출
+    public static String getSubmittedFileName(Part part) {
+        String contentDisp = part.getHeader("content-disposition");
+        String[] tokens = contentDisp.split(";");
+        for (String token : tokens) {
+            if (token.trim().startsWith("filename")) {
+                return token.substring(token.indexOf("=") + 2, token.length() - 1);
+            }
+        }
+        return null;
+    }
+
+    // 파일 확장자 추출
+    public static String getFileExtension(String filename) {
+        int lastDotIndex = filename.lastIndexOf('.');
+        return lastDotIndex > 0 ? filename.substring(lastDotIndex) : "";
+    }
+
+    // UUID 기반 파일명 생성
+    public static String generateStoredFilename(String originalFilename) {
+        String extension = getFileExtension(originalFilename);
+        return UUID.randomUUID().toString() + extension;
+    }
+
+    // 파일 저장
+    public static boolean saveFile(Part part, String filePath) {
+        try {
+            Path path = Paths.get(filePath);
+            Files.copy(part.getInputStream(), path);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+}
+```
+
+### 8단계: 파일 업로드 Command 생성
+
+**파일 위치**: `src/main/java/io/goorm/backend/command/FileUploadCommand.java`
+
+```java
+package io.goorm.backend.command;
+
+import io.goorm.backend.FileUpload;
+import io.goorm.backend.FileUploadDAO;
+import io.goorm.backend.config.UploadConfig;
+import io.goorm.backend.util.FileUtils;
+import io.goorm.backend.util.UploadValidator;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
+import java.sql.Timestamp;
+
 @MultipartConfig(
     fileSizeThreshold = 1024 * 1024, // 1MB
     maxFileSize = 1024 * 1024 * 10,  // 10MB
     maxRequestSize = 1024 * 1024 * 50 // 50MB
 )
-public class FileUploadServlet extends HttpServlet {
+public class FileUploadCommand implements Command {
     private FileUploadDAO fileUploadDAO;
     private UploadConfig uploadConfig;
+    private UploadValidator uploadValidator;
 
-    @Override
-    public void init() throws ServletException {
-        fileUploadDAO = new FileUploadDAO();
-        uploadConfig = UploadConfig.getInstance();
+    public FileUploadCommand() {
+        this.fileUploadDAO = new FileUploadDAO();
+        this.uploadConfig = UploadConfig.getInstance();
+        this.uploadValidator = new UploadValidator();
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-
-        request.setCharacterEncoding("UTF-8");
-
+    public String execute(HttpServletRequest request, HttpServletResponse response) {
         try {
             // 게시글 ID 파라미터
             String boardIdStr = request.getParameter("boardId");
             if (boardIdStr == null || boardIdStr.trim().isEmpty()) {
-                throw new ServletException("게시글 ID가 필요합니다.");
+                request.setAttribute("error", "게시글 ID가 필요합니다.");
+                return "board/write.jsp";
             }
 
             Long boardId = Long.parseLong(boardIdStr);
@@ -654,60 +751,47 @@ public class FileUploadServlet extends HttpServlet {
                 }
             }
 
-            // 성공 응답
-            response.setContentType("application/json");
-            response.setCharacterEncoding("UTF-8");
-            response.getWriter().write("{\"success\": true, \"message\": \"파일 업로드 완료\"}");
+            request.setAttribute("message", "파일 업로드가 완료되었습니다.");
+            return "board/write.jsp";
 
         } catch (Exception e) {
             e.printStackTrace();
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.setContentType("application/json");
-            response.setCharacterEncoding("UTF-8");
-            response.getWriter().write("{\"success\": false, \"message\": \"" + e.getMessage() + "\"}");
+            request.setAttribute("error", "파일 업로드 중 오류가 발생했습니다: " + e.getMessage());
+            return "board/write.jsp";
         }
     }
 
-    private void processFileUpload(Part part, Long boardId) throws IOException, ServletException {
+    private void processFileUpload(Part part, Long boardId) throws Exception {
         // 원본 파일명
-        String originalFilename = getSubmittedFileName(part);
+        String originalFilename = FileUtils.getSubmittedFileName(part);
         if (originalFilename == null || originalFilename.trim().isEmpty()) {
             return;
         }
 
-        // 파일 확장자 검증
-        if (!isValidFileExtension(originalFilename)) {
-            throw new ServletException("허용되지 않는 파일 확장자입니다: " + originalFilename);
-        }
-
-        // 파일 크기 검증
-        if (!isValidFileSize(part.getSize(), originalFilename)) {
-            throw new ServletException("파일 크기가 제한을 초과했습니다.");
-        }
-
-        // MIME 타입 검증
-        if (!isValidMimeType(part.getContentType(), originalFilename)) {
-            throw new ServletException("허용되지 않는 파일 타입입니다.");
+        // 파일 검증
+        if (!uploadValidator.isValidFile(part, originalFilename)) {
+            throw new Exception("허용되지 않는 파일입니다: " + originalFilename);
         }
 
         // 파일 타입 결정 및 저장 경로 설정
         String fileType = uploadConfig.isImageFile(originalFilename) ? "image" : "file";
         String uploadDir = "image".equals(fileType) ? uploadConfig.getImagesPath() : uploadConfig.getFilesPath();
 
-        // 저장할 파일명 생성 (UUID 사용)
-        String fileExtension = getFileExtension(originalFilename);
-        String storedFilename = UUID.randomUUID().toString() + fileExtension;
+        // 저장할 파일명 생성
+        String storedFilename = FileUtils.generateStoredFilename(originalFilename);
 
         // 업로드 디렉토리에 파일 저장
-        Path uploadPath = Paths.get(uploadDir, storedFilename);
-        Files.copy(part.getInputStream(), uploadPath);
+        String filePath = uploadDir + "/" + storedFilename;
+        if (!FileUtils.saveFile(part, filePath)) {
+            throw new Exception("파일 저장에 실패했습니다.");
+        }
 
         // FileUpload 객체 생성
         FileUpload fileUpload = new FileUpload();
         fileUpload.setBoardId(boardId);
         fileUpload.setOriginalFilename(originalFilename);
         fileUpload.setStoredFilename(storedFilename);
-        fileUpload.setFilePath(uploadPath.toString());
+        fileUpload.setFilePath(filePath);
         fileUpload.setFileSize(part.getSize());
         fileUpload.setContentType(part.getContentType());
         fileUpload.setUploadDate(new Timestamp(System.currentTimeMillis()));
@@ -720,50 +804,14 @@ public class FileUploadServlet extends HttpServlet {
         }
 
         // 데이터베이스에 저장
-        fileUploadDAO.insertFileUpload(fileUpload);
-    }
-
-    private boolean isValidFileExtension(String filename) {
-        String extension = getFileExtension(filename).toLowerCase();
-        return uploadConfig.getAllowedFileExtensions().contains(extension) ||
-               uploadConfig.getAllowedImageExtensions().contains(extension);
-    }
-
-    private boolean isValidFileSize(long fileSize, String filename) {
-        if (uploadConfig.isImageFile(filename)) {
-            return fileSize <= uploadConfig.getMaxImageSize();
-        } else {
-            return fileSize <= uploadConfig.getMaxFileSize();
+        if (!fileUploadDAO.insertFileUpload(fileUpload)) {
+            throw new Exception("데이터베이스 저장에 실패했습니다.");
         }
-    }
-
-    private boolean isValidMimeType(String contentType, String filename) {
-        if (uploadConfig.isImageFile(filename)) {
-            return contentType.startsWith("image/");
-        } else {
-            return !contentType.startsWith("image/");
-        }
-    }
-
-    private String getSubmittedFileName(Part part) {
-        String contentDisp = part.getHeader("content-disposition");
-        String[] tokens = contentDisp.split(";");
-        for (String token : tokens) {
-            if (token.trim().startsWith("filename")) {
-                return token.substring(token.indexOf("=") + 2, token.length() - 1);
-            }
-        }
-        return null;
-    }
-
-    private String getFileExtension(String filename) {
-        int lastDotIndex = filename.lastIndexOf('.');
-        return lastDotIndex > 0 ? filename.substring(lastDotIndex) : "";
     }
 }
 ```
 
-### 8단계: 데이터베이스 테이블 생성
+### 9단계: 데이터베이스 테이블 생성
 
 **파일 위치**: `src/main/resources/sql/create_file_upload_table.sql`
 
@@ -792,7 +840,7 @@ CREATE INDEX idx_board_id_file_type ON file_upload(board_id, file_type);
 
 ```
 
-### 9단계: IntelliJ + Tomcat 설정
+### 11단계: IntelliJ + Tomcat 설정
 
 #### A. 업로드 폴더 생성
 
@@ -818,6 +866,15 @@ CREATE INDEX idx_board_id_file_type ON file_upload(board_id, file_type);
 </servlet-mapping>
 ```
 
+### 10단계: HandlerMapping에 명령어 추가
+
+**파일 위치**: `src/main/java/io/goorm/backend/handler/HandlerMapping.java`
+
+```java
+// 기존 코드에 추가
+commandMap.put("fileUpload", new FileUploadCommand());
+```
+
 ## 🎨 JSP 파일 활용
 
 ### 기존 JSP 파일 사용 방법
@@ -829,6 +886,18 @@ CREATE INDEX idx_board_id_file_type ON file_upload(board_id, file_type);
 3. **`list.jsp`** - 첨부파일 개수 표시가 포함된 게시글 목록 페이지
 
 **⚠️ 주의사항**: 이 JSP 파일들은 완성본이므로 수정하지 마세요. 파일 업로드 기능이 이미 구현되어 있습니다.
+
+### JSP에서 파일 업로드 요청
+
+JSP에서 파일 업로드를 다음과 같이 요청합니다:
+
+```jsp
+<form action="front?command=fileUpload" method="post" enctype="multipart/form-data">
+    <input type="hidden" name="boardId" value="${board.id}">
+    <input type="file" name="file" multiple>
+    <button type="submit">파일 업로드</button>
+</form>
+```
 
 ### 이미지 표시 예시
 
@@ -863,7 +932,10 @@ JSP에서 이미지 파일을 다음과 같이 표시할 수 있습니다:
 - [ ] FileUploadDAO.java 파일이 생성되었는가?
 - [ ] Board.java 파일이 생성되었는가?
 - [ ] BoardDAO.java 파일이 생성되었는가?
-- [ ] FileUploadServlet.java 파일이 생성되었는가?
+- [ ] UploadValidator.java 파일이 생성되었는가?
+- [ ] FileUtils.java 파일이 생성되었는가?
+- [ ] FileUploadCommand.java 파일이 생성되었는가?
+- [ ] HandlerMapping에 fileUpload 명령어가 추가되었는가?
 - [ ] 데이터베이스 테이블이 생성되었는가?
 - [ ] uploads 폴더 구조가 생성되었는가?
 - [ ] IntelliJ + Tomcat 설정이 완료되었는가?
