@@ -52,9 +52,6 @@ public class LoginCommand implements Command {
         // 로그인 성공 - 세션에 사용자 정보 저장
         HttpSession session = request.getSession();
         session.setAttribute("user", user);
-        session.setAttribute("userId", user.getId());
-        session.setAttribute("userName", user.getName());
-        session.setAttribute("username", user.getUsername());
 
         // 메인 페이지로 리다이렉트
         response.sendRedirect(request.getContextPath() + "/");
