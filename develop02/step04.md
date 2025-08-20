@@ -277,14 +277,6 @@ curl "http://localhost:8080/front?command=boardInsert&title=<script>alert('XSS')
 - 필터 동작 로그 확인
 - 요청/응답 처리 과정 모니터링
 
-## 🔗 다음 단계
-
-XSS 방지 기능 구현 완료 후:
-
-1. **develop03 생성**: 페이지네이션, 이미지 썸네일, 대용량 업로드
-2. **스프링부트 전환**: Spring Security로 보안 강화
-3. **프로덕션 배포**: 실제 서비스 환경 적용
-
 ## 💡 추가 보안 고려사항
 
 ### 1. Content Security Policy (CSP)

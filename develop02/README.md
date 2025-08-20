@@ -9,9 +9,10 @@
 ### 1. 파일 업로드
 
 - 게시글 작성 시 파일 첨부 기능
-- 다중 파일 업로드 지원 (최대 5개)
-- 파일 크기 제한 (개별 파일 10MB, 전체 50MB)
-- 허용 파일 형식 제한 (이미지, 문서, 압축파일 등)
+- 파일과 이미지를 분리하여 저장 (uploads/files, uploads/images)
+- 파일 크기 제한 (일반 파일 10MB, 이미지 5MB)
+- 화이트리스트 방식의 파일 확장자 제한
+- 설정 파일을 통한 업로드 경로 및 제한사항 관리
 
 ### 2. 파일 관리
 
@@ -24,8 +25,9 @@
 
 - 파일 타입 검증 (MIME 타입, 확장자)
 - 파일 크기 검증
-- 악성 파일 방지
-- 업로드 경로 보안
+- 화이트리스트 방식의 파일 확장자 제한
+- 업로드 경로 보안 (디렉토리 트래버설 공격 방지)
+- 이미지 폴더는 웹에서 직접 접근 가능, 일반 파일은 보안 접근
 
 ## 📁 추가될 파일들
 
@@ -33,9 +35,12 @@
 
 - `FileUpload.java` - 파일 정보 모델
 - `FileUploadDAO.java` - 파일 데이터 접근
-- `FileUploadCommand.java` - 파일 업로드 처리
+- `FileUploadServlet.java` - 파일 업로드 처리
 - `FileDownloadCommand.java` - 파일 다운로드 처리
 - `FileDeleteCommand.java` - 파일 삭제 처리
+- `UploadConfig.java` - 업로드 설정 관리
+- `Board.java` - 첨부파일 목록 필드 추가
+- `BoardDAO.java` - 파일 첨부 정보 조회 기능 추가
 
 ### JSP 파일
 
@@ -45,7 +50,9 @@
 
 ### 데이터베이스
 
-- `file_upload` 테이블 생성 (id, board_id, original_name, stored_name, file_size, file_type, upload_date)
+- `file_upload` 테이블 생성 (id, board_id, original_filename, stored_filename, file_path, file_size, content_type, upload_date, file_type, web_url)
+- 외래키 제약조건 (board_id → board.id)
+- 인덱스 생성 (board_id, file_type, stored_filename)
 
 ## 🔐 보안 고려사항
 
@@ -58,36 +65,46 @@
 
 ## 🚀 구현 순서
 
-1. **데이터베이스 설계**: file_upload 테이블 생성
-2. **파일 모델**: FileUpload 클래스 및 FileUploadDAO 구현
-3. **업로드 시스템**: 파일 업로드 Command 구현
-4. **다운로드 시스템**: 파일 다운로드 Command 구현
-5. **UI 수정**: 기존 JSP에 파일 업로드/다운로드 기능 추가
-6. **XSS 방지**: XSSFilter 구현 및 web.xml 설정
-7. **테스트**: 전체 파일 업로드 시스템 동작 확인
+1. **업로드 설정**: upload.properties 및 UploadConfig 클래스 생성
+2. **데이터베이스 설계**: file_upload 테이블 생성
+3. **파일 모델**: FileUpload 클래스 및 FileUploadDAO 구현
+4. **게시글 모델 확장**: Board 클래스에 첨부파일 목록 필드 추가
+5. **업로드 시스템**: FileUploadServlet 구현
+6. **다운로드 시스템**: FileDownloadCommand 구현
+7. **삭제 시스템**: FileDeleteCommand 구현
+8. **XSS 방지**: XSSFilter 구현 및 web.xml 설정
+9. **테스트**: 전체 파일 업로드 시스템 동작 확인
 
-## 📚 관련 문서
+## 📚 구현 가이드
 
-- **상세 구현 가이드**: [step01.md](step01.md) - 파일 업로드 기본 구조
-- **상세 구현 가이드**: [step02.md](step02.md) - 파일 업로드 처리
-- **상세 구현 가이드**: [step03.md](step03.md) - 파일 다운로드 및 관리
-- **보안 강화**: [step04.md](step04.md) - XSS 방지 및 보안 강화
+각 단계별 상세 구현 가이드가 제공됩니다:
 
-## 🎨 JSP 소스 (HTML/Tailwind CSS 버전)
+- **Step 01**: 실무 수준 파일 업로드 시스템 구현
+- **Step 02**: 파일 다운로드 기능 구현
+- **Step 03**: 파일 삭제 기능 구현
+- **Step 04**: XSS 방지 및 보안 강화
 
-각 단계에서 구현하는 JSP 파일의 **HTML/Tailwind CSS 버전**이 `jsp/` 폴더에 제공됩니다.
+## 🎨 JSP 활용 방법
+
+### 완성된 JSP 파일 제공
+
+`jsp/` 폴더에 파일 업로드 기능이 완벽하게 구현된 JSP 파일들이 제공됩니다.
 
 ### 제공되는 파일들
 
-- **게시글 목록**: [jsp/list.jsp](jsp/list.jsp) - 파일 첨부 표시 포함
-- **게시글 상세보기**: [jsp/view.jsp](jsp/view.jsp) - 파일 다운로드 포함
-- **게시글 작성**: [jsp/write.jsp](jsp/write.jsp) - 파일 업로드 폼 포함
+- **게시글 목록**: [jsp/list.jsp](jsp/list.jsp) - 파일 첨부 개수 표시
+- **게시글 상세보기**: [jsp/view.jsp](jsp/view.jsp) - 파일 다운로드 및 삭제
+- **게시글 작성**: [jsp/write.jsp](jsp/write.jsp) - 파일 업로드 폼
 
 ### 특징
 
 - **Tailwind CSS**: 모던하고 반응형 디자인
 - **JSTL/EL**: 서버 사이드 로직과 데이터 바인딩
-- **파일 업로드 UI**: 드래그 앤 드롭 지원
+- **파일 관리**: 업로드, 다운로드, 삭제 기능 완성
 - **사용자 경험**: 직관적인 파일 관리 인터페이스
 
-**참고**: 이 JSP 파일들은 `develop01`의 사용자 인증 및 권한 제어 기능과 연동되어 작동합니다.
+### 사용 방법
+
+1. **백엔드 구현**: Step 01~04 가이드에 따라 Java 클래스 구현
+2. **JSP 적용**: `jsp/` 폴더의 완성된 JSP 파일들을 그대로 사용
+3. **수정 불필요**: JSP 파일들은 완성본이므로 수정하지 않음
