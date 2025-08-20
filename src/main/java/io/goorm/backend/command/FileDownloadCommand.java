@@ -66,7 +66,7 @@ public class FileDownloadCommand implements Command {
     Path path = Paths.get(filePath);
 
     // 업로드 루트 경로 검증 (보안) - properties에서 읽어오기
-    String uploadRoot = UploadConfig.getUploadRootPath();
+    String uploadRoot = UploadConfig.getInstance().getRootPath();
     if (!path.normalize().startsWith(Paths.get(uploadRoot))) {
       throw new SecurityException("허용되지 않는 파일 경로입니다.");
     }
