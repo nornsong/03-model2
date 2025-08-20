@@ -45,21 +45,20 @@
 
 ### 1단계: 데이터베이스 테이블 생성
 
-**H2 데이터베이스에 user 테이블을 생성합니다.**
+**H2 데이터베이스에 users 테이블을 생성합니다.**
 
 ```sql
-CREATE TABLE user (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
+CREATE TABLE IF NOT EXISTS users (
+    id IDENTITY PRIMARY KEY,           -- BIGINT + auto-increment의 H2 축약형
+    username VARCHAR(50) NOT NULL UNIQUE,
     password VARCHAR(100) NOT NULL,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100),
     reg_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 테스트용 사용자 추가 (선택사항)
-INSERT INTO user (username, password, name, email)
-VALUES ('admin', 'admin123', '관리자', 'admin@test.com');
+
+
 ```
 
 ### 2단계: User 모델 클래스 생성
@@ -102,30 +101,30 @@ public class UserDAO {
         this.jdbcTemplate = new JdbcTemplate(DatabaseConfig.getDataSource());
     }
 
-    // 사용자 등록
-    public boolean insertUser(User user) {
-        String sql = "INSERT INTO user (username, password, name, email) VALUES (?, ?, ?, ?)";
-        try {
-            int result = jdbcTemplate.update(sql,
-                user.getUsername(),
-                user.getPassword(),
-                user.getName(),
-                user.getEmail());
-            return result > 0;
-        } catch (Exception e) {
-            return false;
-        }
-    }
+         // 사용자 등록
+     public boolean insertUser(User user) {
+         String sql = "INSERT INTO users (username, password, name, email) VALUES (?, ?, ?, ?)";
+         try {
+             int result = jdbcTemplate.update(sql,
+                 user.getUsername(),
+                 user.getPassword(),
+                 user.getName(),
+                 user.getEmail());
+             return result > 0;
+         } catch (Exception e) {
+             return false;
+         }
+     }
 
-    // 사용자명으로 사용자 조회 (중복 확인용)
-    public User getUserByUsername(String username) {
-        String sql = "SELECT * FROM user WHERE username = ?";
-        try {
-            return jdbcTemplate.queryForObject(sql, userRowMapper, username);
-        } catch (Exception e) {
-            return null;
-        }
-    }
+     // 사용자명으로 사용자 조회 (중복 확인용)
+     public User getUserByUsername(String username) {
+         String sql = "SELECT * FROM users WHERE username = ?";
+         try {
+             return jdbcTemplate.queryForObject(sql, userRowMapper, username);
+         } catch (Exception e) {
+             return null;
+         }
+     }
 
     // RowMapper 정의
     private RowMapper<User> userRowMapper = (rs, rowNum) -> {
@@ -282,7 +281,7 @@ commandMap.put("signup", new SignupCommand());
 
 ## 📝 완료 체크리스트
 
-- [ ] user 테이블 생성
+- [ ] users 테이블 생성
 - [ ] User 모델 클래스 생성
 - [ ] UserDAO 클래스 생성
 - [ ] SignupCommand 클래스 생성

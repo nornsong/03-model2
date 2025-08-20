@@ -31,7 +31,7 @@
 ## 📋 준비사항
 
 - 1단계 완료 (회원가입 기능 구현)
-- User 테이블에 테스트 사용자 데이터 존재
+- users 테이블에 테스트 사용자 데이터 존재
 - Spring Framework 라이브러리 사용 가능
 
 ## 🚀 실습 단계별 진행
@@ -42,7 +42,7 @@
 
 1. `http://localhost:8080/front?command=signup` 접속 확인
 2. 테스트 사용자로 회원가입 완료
-3. H2 데이터베이스에서 user 테이블 데이터 확인
+3. H2 데이터베이스에서 users 테이블 데이터 확인
 
 ### 1단계: UserDAO에 로그인 메서드 추가
 
@@ -53,7 +53,7 @@
 
 // 로그인 검증 (아이디/비밀번호 확인)
 public User login(String username, String password) {
-    String sql = "SELECT * FROM user WHERE username = ? AND password = ?";
+            String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
     try {
         return jdbcTemplate.queryForObject(sql, userRowMapper, username, password);
     } catch (Exception e) {
@@ -62,8 +62,8 @@ public User login(String username, String password) {
 }
 
 // 사용자 ID로 사용자 조회
-public User getUserById(int userId) {
-    String sql = "SELECT * FROM user WHERE id = ?";
+public User getUserById(Long userId) {
+            String sql = "SELECT * FROM users WHERE id = ?";
     try {
         return jdbcTemplate.queryForObject(sql, userRowMapper, userId);
     } catch (Exception e) {
@@ -120,9 +120,6 @@ public class LoginCommand implements Command {
                     // 로그인 성공 - 세션에 사용자 정보 저장
                     HttpSession session = request.getSession();
                     session.setAttribute("user", user);
-                    session.setAttribute("userId", user.getId());
-                    session.setAttribute("username", user.getUsername());
-                    session.setAttribute("userName", user.getName());
 
                     // 게시판 목록으로 이동
                     response.sendRedirect("front?command=boardList");
@@ -256,7 +253,7 @@ commandMap.put("logout", new LogoutCommand());
 <div style="text-align: right; margin: 10px;">
     <c:choose>
         <c:when test="${not empty sessionScope.user}">
-            안녕하세요, ${sessionScope.userName}님!
+                         안녕하세요, ${sessionScope.user.name}님!
             <a href="front?command=logout">로그아웃</a>
         </c:when>
         <c:otherwise>
