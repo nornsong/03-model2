@@ -43,8 +43,33 @@ public class BoardInsertCommand implements Command {
       System.out.println("Multipart 요청 여부: " + isMultipart);
 
       // 파라미터 읽기 시도
-      String title = request.getParameter("title");
-      String content = request.getParameter("content");
+      String title = null;
+      String content = null;
+
+      if (isMultipart) {
+        // multipart 요청일 때는 Part API 사용
+        System.out.println("Multipart 요청 - Part API로 파라미터 읽기");
+        try {
+          Collection<Part> allParts = request.getParts();
+          for (Part part : allParts) {
+            if (part.getName().equals("title")) {
+              title = getPartContent(part);
+              System.out.println("Part에서 title 읽기: [" + title + "]");
+            } else if (part.getName().equals("content")) {
+              content = getPartContent(part);
+              System.out.println("Part에서 content 읽기: [" + content + "]");
+            }
+          }
+        } catch (Exception e) {
+          System.out.println("Part API로 파라미터 읽기 실패: " + e.getMessage());
+          e.printStackTrace();
+        }
+      } else {
+        // 일반 요청일 때는 getParameter 사용
+        System.out.println("일반 요청 - getParameter로 파라미터 읽기");
+        title = request.getParameter("title");
+        content = request.getParameter("content");
+      }
 
       System.out.println("=== 파라미터 읽기 결과 ===");
       System.out.println("제목: [" + title + "]");
@@ -213,5 +238,18 @@ public class BoardInsertCommand implements Command {
       }
     }
     return null;
+  }
+
+  // Part에서 텍스트 내용 읽기
+  private String getPartContent(Part part) throws IOException {
+    try (java.io.BufferedReader reader = new java.io.BufferedReader(
+        new java.io.InputStreamReader(part.getInputStream(), "UTF-8"))) {
+      StringBuilder content = new StringBuilder();
+      String line;
+      while ((line = reader.readLine()) != null) {
+        content.append(line);
+      }
+      return content.toString();
+    }
   }
 }
