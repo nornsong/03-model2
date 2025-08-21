@@ -112,12 +112,12 @@ public class BoardInsertCommand implements Command {
       board.setContent(content);
 
       BoardDAO dao = new BoardDAO();
-      boolean insertResult = dao.insertBoard(board);
+      Long boardId = dao.insertBoard(board);
 
-      if (insertResult) {
+      if (boardId != null) {
         // 게시글 등록 성공 시 첨부파일 처리
         try {
-          processFileUploads(request, board.getId());
+          processFileUploads(request, boardId);
         } catch (Exception e) {
           System.out.println("파일 업로드 처리 중 오류: " + e.getMessage());
           e.printStackTrace();
