@@ -1,307 +1,277 @@
-# 🗑️ Step 03: 파일 삭제 기능 구현
+# Step 3: 게시글 작성 시 파일 업로드
 
-## 🎯 학습 목표
+## 개요
 
-- 파일 삭제 Servlet 구현
-- 사용자 권한 검증 (파일 소유자만 삭제 가능)
-- 물리적 파일 삭제 및 데이터베이스 정리
-- 보안을 고려한 삭제 처리
+게시글 작성 시 파일을 첨부할 수 있는 기능을 구현합니다.
 
-## 🏗️ 아키텍처 개요
+## 1단계: BoardInsertCommand 수정
 
-```
-사용자 → JSP 삭제 버튼 → FrontController → FileDeleteCommand → 권한 검증 → FileUploadDAO → 파일 시스템
-                ↓
-            세션 기반 사용자 확인
-                ↓
-            파일 소유자 권한 확인
-                ↓
-            물리적 파일 삭제 + DB 정리
-```
+**수정되는 파일:**
+| 파일 경로 | 수정 내용 |
+|-----------|-----------|
+| `src/main/java/io/goorm/backend/command/BoardInsertCommand.java` | 파일 업로드 처리 로직 추가, Part API로 파라미터 읽기 |
 
-## 📋 구현 단계
+**BoardInsertCommand.java 주요 변경사항:**
 
-### 1단계: FileDeleteCommand 클래스 생성
+- multipart 요청 감지 및 처리
+- Part API를 사용한 텍스트 필드 읽기
+- 파일 업로드 처리 로직 추가
+- 파일 타입별 저장 경로 분리
 
-**파일 위치**: `src/main/java/io/goorm/backend/command/FileDeleteCommand.java`
+**multipart 파라미터 읽기:**
 
 ```java
-package io.goorm.backend.command;
-
-import io.goorm.backend.FileUpload;
-import io.goorm.backend.FileUploadDAO;
-import io.goorm.backend.User;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
-public class FileDeleteCommand implements Command {
-    private FileUploadDAO fileUploadDAO;
-
-    public FileDeleteCommand() {
-        this.fileUploadDAO = new FileUploadDAO();
-    }
-
-    @Override
-    public String execute(HttpServletRequest request, HttpServletResponse response) {
-
-        try {
-            // 로그인 확인
-            HttpSession session = request.getSession(false);
-            if (session == null || session.getAttribute("user") == null) {
-                request.setAttribute("error", "로그인이 필요합니다.");
-                return "board/view.jsp";
-            }
-
-            User user = (User) session.getAttribute("user");
-
-            // 파일 ID 파라미터
-            String fileIdStr = request.getParameter("fileId");
-            if (fileIdStr == null || fileIdStr.trim().isEmpty()) {
-                throw new ServletException("파일 ID가 필요합니다.");
-            }
-
-            Long fileId = Long.parseLong(fileIdStr);
-
-            // 파일 정보 조회
-            FileUpload fileUpload = fileUploadDAO.getFileById(fileId);
-            if (fileUpload == null) {
-                throw new ServletException("파일을 찾을 수 없습니다.");
-            }
-
-            // 권한 확인 (파일 소유자만 삭제 가능)
-            if (!hasPermissionToDelete(user, fileUpload)) {
-                request.setAttribute("error", "파일을 삭제할 권한이 없습니다.");
-                return "board/view.jsp";
-            }
-
-            // 물리적 파일 삭제
-            if (!deletePhysicalFile(fileUpload)) {
-                throw new ServletException("물리적 파일 삭제에 실패했습니다.");
-            }
-
-            // 데이터베이스에서 파일 정보 삭제
-            if (!fileUploadDAO.deleteFile(fileId)) {
-                throw new ServletException("데이터베이스에서 파일 정보 삭제에 실패했습니다.");
-            }
-
-            // 성공 메시지 설정
-            request.setAttribute("message", "파일이 성공적으로 삭제되었습니다.");
-            return "board/view.jsp";
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            request.setAttribute("error", "파일 삭제 중 오류가 발생했습니다: " + e.getMessage());
-            return "board/view.jsp";
+if (isMultipart) {
+    // Part API로 파라미터 읽기
+    Collection<Part> allParts = request.getParts();
+    for (Part part : allParts) {
+        if (part.getName().equals("title")) {
+            title = getPartContent(part);
+        } else if (part.getName().equals("content")) {
+            content = getPartContent(part);
         }
     }
+} else {
+    // 일반 getParameter 사용
+    title = request.getParameter("title");
+    content = request.getParameter("content");
+}
+```
 
-    private boolean hasPermissionToDelete(User user, FileUpload fileUpload) {
-        // 관리자 권한 확인 (선택사항)
-        if (user.getUsername().equals("admin")) {
-            return true;
-        }
+**파일 업로드 처리:**
 
-        // 게시글 작성자 확인 (BoardDAO를 통해 게시글 정보 조회 필요)
-        // 여기서는 간단히 파일 업로드 시점의 사용자 정보로 확인
-        // 실제 구현에서는 Board 테이블의 author와 비교해야 함
-
-        // 임시로 true 반환 (실제 구현 시 수정 필요)
-        return true;
-    }
-
-    private boolean deletePhysicalFile(FileUpload fileUpload) {
-        try {
-            Path filePath = Paths.get(fileUpload.getFilePath());
-
-            // 파일 경로 검증 (보안)
-            Path uploadsDir = Paths.get("uploads").toAbsolutePath();
-            if (!filePath.startsWith(uploadsDir)) {
-                return false;
-            }
-
-            // 파일 존재 확인
-            if (Files.exists(filePath)) {
-                Files.delete(filePath);
-                return true;
-            }
-
-            return true; // 파일이 이미 존재하지 않는 경우도 성공으로 처리
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
+```java
+// 게시글 등록 성공 시 첨부파일 처리
+if (insertResult) {
+    try {
+        processFileUploads(request, board.getId());
+    } catch (Exception e) {
+        System.out.println("파일 업로드 처리 중 오류: " + e.getMessage());
+        e.printStackTrace();
     }
 }
 ```
 
-### 2단계: FileUploadDAO에 삭제 메소드 추가
+---
 
-**파일 위치**: `src/main/java/io/goorm/backend/FileUploadDAO.java`
+## 2단계: BoardDAO 수정
 
-기존 FileUploadDAO 클래스에 다음 메소드를 추가하세요:
+**수정되는 파일:**
+| 파일 경로 | 수정 내용 |
+|-----------|-----------|
+| `src/main/java/io/goorm/backend/BoardDAO.java` | insertBoard 후 생성된 ID를 board 객체에 설정 |
+
+**BoardDAO.java 주요 변경사항:**
+
+- `KeyHolder`를 사용하여 생성된 ID 가져오기
+- `board.setId(generatedId.longValue())`로 생성된 ID 설정
+- 파일 업로드 시 올바른 board_id 사용
+
+**KeyHolder 사용:**
 
 ```java
-// 파일 삭제
-public boolean deleteFile(Long fileId) {
-    String sql = "DELETE FROM file_upload WHERE id = ?";
+KeyHolder keyHolder = new GeneratedKeyHolder();
+int result = jdbcTemplate.update(connection -> {
+    PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+    ps.setString(1, board.getTitle());
+    ps.setString(2, board.getContent());
+    ps.setString(3, board.getAuthor());
+    return ps;
+}, keyHolder);
+
+if (result > 0) {
+    Number generatedId = keyHolder.getKey();
+    if (generatedId != null) {
+        board.setId(generatedId.longValue());
+    }
+    return true;
+}
+```
+
+---
+
+## 3단계: 파일 업로드 처리 메서드 구현
+
+**BoardInsertCommand.java에 추가되는 메서드:**
+
+**processFileUploads():**
+
+```java
+private void processFileUploads(HttpServletRequest request, Long boardId) {
+    // multipart 요청인지 확인
+    String contentType = request.getContentType();
+    if (!contentType.startsWith("multipart/form-data")) {
+        return;
+    }
 
     try {
-        int result = jdbcTemplate.update(sql, fileId);
-        return result > 0;
+        Collection<Part> allParts = request.getParts();
+        for (Part part : allParts) {
+            if (part.getName().equals("files") && part.getSize() > 0) {
+                String fileName = getSubmittedFileName(part);
+                if (fileName != null && !fileName.trim().isEmpty()) {
+                    saveFile(part, fileName, boardId);
+                }
+            }
+        }
     } catch (Exception e) {
         e.printStackTrace();
-        return false;
     }
 }
 ```
 
-### 3단계: HandlerMapping에 명령어 추가
-
-**파일 위치**: `src/main/java/io/goorm/backend/handler/HandlerMapping.java`
-
-기존 HandlerMapping 클래스의 생성자에 다음 매핑을 추가하세요:
+**saveFile():**
 
 ```java
-public HandlerMapping() {
-    commandMap = new HashMap<>();
-    // 기존 명령어들...
-    commandMap.put("boardList", new BoardListCommand());
-    commandMap.put("boardView", new BoardViewCommand());
-    commandMap.put("boardWrite", new BoardWriteCommand());
-    commandMap.put("boardInsert", new BoardInsertCommand());
-    commandMap.put("boardUpdate", new BoardUpdateCommand());
-    commandMap.put("boardDelete", new BoardDeleteCommand());
-    commandMap.put("signup", new SignupCommand());
-    commandMap.put("login", new LoginCommand());
-    commandMap.put("logout", new LogoutCommand());
-    commandMap.put("fileDownload", new FileDownloadCommand());
+private void saveFile(Part part, String fileName, Long boardId) {
+    // 파일 확장자 확인
+    String extension = getFileExtension(fileName).toLowerCase();
+    boolean isImage = uploadConfig.isImageFile(fileName);
 
-    // 파일 삭제 명령어 추가
-    commandMap.put("fileDelete", new FileDeleteCommand());
-}
-```
+    // 저장 경로 결정
+    String uploadDir = isImage ? uploadConfig.getImagesPath() : uploadConfig.getFilesPath();
+    String storedFileName = UUID.randomUUID().toString() + extension;
+    String filePath = uploadDir + File.separator + storedFileName;
 
-### 4단계: 권한 검증 로직 개선 (선택사항)
-
-더 정확한 권한 검증을 위해 `hasPermissionToDelete` 메소드를 다음과 같이 수정할 수 있습니다:
-
-```java
-private boolean hasPermissionToDelete(User user, FileUpload fileUpload) {
-    try {
-        // BoardDAO를 통해 게시글 정보 조회
-        BoardDAO boardDAO = new BoardDAO();
-        Board board = boardDAO.getBoardById(fileUpload.getBoardId());
-
-        if (board == null) {
-            return false;
-        }
-
-        // 관리자 권한 확인
-        if (user.getUsername().equals("admin")) {
-            return true;
-        }
-
-        // 게시글 작성자 확인
-        return user.getUsername().equals(board.getAuthor());
-
-    } catch (Exception e) {
-        e.printStackTrace();
-        return false;
+    // 디렉토리 생성
+    File dir = new File(uploadDir);
+    if (!dir.exists()) {
+        dir.mkdirs();
     }
+
+    // 파일 저장
+    part.write(filePath);
+
+    // DB에 파일 정보 저장
+    FileUpload fileUpload = new FileUpload();
+    fileUpload.setBoardId(boardId);
+    fileUpload.setOriginalFilename(fileName);
+    fileUpload.setStoredFilename(storedFileName);
+    fileUpload.setFilePath(filePath);
+    fileUpload.setFileSize(part.getSize());
+    fileUpload.setContentType(part.getContentType());
+    fileUpload.setFileType(part.getContentType());
+    fileUpload.setUploadDate(new Timestamp(System.currentTimeMillis()));
+
+    FileUploadDAO fileDAO = new FileUploadDAO();
+    fileDAO.insertFileUpload(fileUpload);
 }
 ```
 
-## 🎨 JSP 파일 활용
+---
 
-### 기존 JSP 파일 사용 방법
+## 4단계: write.jsp 수정
 
-`develop02/jsp/` 폴더에 있는 다음 JSP 파일들을 그대로 사용하세요:
+**수정되는 파일:**
+| 파일 경로 | 수정 내용 |
+|-----------|-----------|
+| `src/main/webapp/board/write.jsp` | `enctype="multipart/form-data"` 추가, 파일 입력 필드 추가 |
 
-1. **`view.jsp`** - 첨부파일 목록과 삭제 버튼이 포함된 게시글 보기 페이지
+**write.jsp 주요 변경사항:**
 
-**⚠️ 주의사항**: 이 JSP 파일은 완성본이므로 수정하지 마세요. 파일 삭제 기능이 이미 구현되어 있습니다.
+- `<form enctype="multipart/form-data">` 추가
+- 파일 입력 필드 추가
+- 작성자 필드를 세션 사용자로 자동 설정
 
-### 삭제 버튼 확인
-
-JSP에서 파일 삭제 버튼이 다음과 같이 구현되어 있는지 확인하세요:
+**파일 업로드 폼:**
 
 ```jsp
-<c:forEach var="file" items="${board.attachments}">
-    <div class="file-item">
-        <span class="filename">${file.originalFilename}</span>
-        <a href="front?command=fileDownload&id=${file.id}"
-           class="download-link">다운로드</a>
+<form action="front?command=boardInsert" method="post" enctype="multipart/form-data">
+    <!-- 제목, 내용 필드 -->
 
-        <!-- 로그인한 사용자만 삭제 버튼 표시 -->
-        <c:if test="${not empty sessionScope.user}">
-            <button onclick="deleteFile(${file.id})"
-                    class="delete-btn">삭제</button>
-        </c:if>
-    </div>
-</c:forEach>
+    <!-- 작성자 필드 (자동 설정) -->
+    <input type="text" value="${sessionScope.user.name}" readonly>
+    <input type="hidden" name="author" value="${sessionScope.user.id}">
 
-<!-- 파일 삭제 JavaScript 함수 -->
-<script>
-function deleteFile(fileId) {
-    if (confirm('정말로 이 파일을 삭제하시겠습니까?')) {
-        fetch('front?command=fileDelete', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: 'fileId=' + fileId
-        })
-        .then(response => {
-            if (response.ok) {
-                alert('파일이 삭제되었습니다.');
-                location.reload(); // 페이지 새로고침
-            } else {
-                alert('파일 삭제 실패');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('파일 삭제 중 오류가 발생했습니다.');
-        });
-    }
-}
-</script>
+    <!-- 파일 업로드 필드 -->
+    <input type="file" name="files" multiple
+           accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.txt,.zip,.rar">
+
+    <button type="submit">등록하기</button>
+</form>
 ```
 
-## ✅ 검증 체크리스트
+---
 
-- [ ] FileDeleteCommand.java 파일이 생성되었는가?
-- [ ] FileUploadDAO.deleteFile() 메소드가 정상 작동하는가?
-- [ ] HandlerMapping에 fileDelete 명령어가 추가되었는가?
-- [ ] 파일 삭제 버튼이 정상적으로 작동하는가?
-- [ ] 권한 검증이 정상적으로 작동하는가?
-- [ ] 물리적 파일과 데이터베이스 정보가 모두 삭제되는가?
+## 5단계: 파일 업로드 유틸리티 메서드
 
-## 🔧 문제 해결
+**BoardInsertCommand.java에 추가되는 유틸리티 메서드:**
 
-### 자주 발생하는 오류
+**getPartContent():**
 
-1. **권한 오류**: 로그인 상태와 사용자 권한 확인
-2. **파일 삭제 실패**: 파일 경로와 권한 확인
-3. **데이터베이스 오류**: 외래키 제약조건 확인
-4. **JavaScript 오류**: 브라우저 콘솔에서 에러 메시지 확인
+```java
+private String getPartContent(Part part) throws IOException {
+    try (BufferedReader reader = new BufferedReader(
+            new InputStreamReader(part.getInputStream(), "UTF-8"))) {
+        StringBuilder content = new StringBuilder();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            content.append(line);
+        }
+        return content.toString();
+    }
+}
+```
 
-### 디버깅 팁
+**getFileExtension():**
 
-- 브라우저 개발자 도구의 Network 탭에서 삭제 요청 확인
-- 서버 로그에서 예외 메시지 확인
-- 데이터베이스에서 file_upload 테이블 데이터 확인
-- 파일 시스템에서 uploads 디렉토리 내용 확인
+```java
+private String getFileExtension(String fileName) {
+    int lastDotIndex = fileName.lastIndexOf('.');
+    return lastDotIndex > 0 ? fileName.substring(lastDotIndex) : "";
+}
+```
 
-### 보안 고려사항
+**getSubmittedFileName():**
 
-- 로그인 상태 확인으로 인증되지 않은 사용자 차단
-- 파일 소유자 권한 확인으로 무단 삭제 방지
-- 파일 경로 검증으로 디렉토리 트래버설 공격 방지
-- 적절한 에러 메시지로 시스템 정보 노출 방지
-- CSRF 토큰 사용 고려 (향후 보안 강화 시)
+```java
+private String getSubmittedFileName(Part part) {
+    String contentDisp = part.getHeader("content-disposition");
+    String[] tokens = contentDisp.split(";");
+    for (String token : tokens) {
+        if (token.trim().startsWith("filename")) {
+            return token.substring(token.indexOf("=") + 2, token.length() - 1);
+        }
+    }
+    return null;
+}
+```
+
+---
+
+## 완료 체크리스트
+
+- [ ] BoardInsertCommand에 multipart 요청 처리 추가
+- [ ] Part API를 사용한 텍스트 필드 읽기 구현
+- [ ] 파일 업로드 처리 메서드 구현
+- [ ] BoardDAO에서 생성된 ID 반환 구현
+- [ ] write.jsp에 multipart 폼 설정 추가
+- [ ] 파일 입력 필드 추가
+- [ ] 파일 업로드 테스트
+
+---
+
+## 테스트 방법
+
+1. **multipart 요청 처리 테스트:**
+
+   - 게시글 작성 폼에서 제목/내용 입력
+   - 파일 첨부
+   - 등록하기 버튼 클릭
+   - 서버 콘솔에서 multipart 처리 로그 확인
+
+2. **파일 업로드 테스트:**
+
+   - 이미지 파일과 일반 파일 첨부
+   - 업로드 디렉토리에 파일 저장 확인
+   - 데이터베이스에 파일 정보 저장 확인
+
+3. **파라미터 읽기 테스트:**
+   - multipart 요청에서 제목/내용이 올바르게 읽히는지 확인
+   - Part API와 getParameter() 차이점 확인
+
+---
+
+## 다음 단계
+
+게시글 작성 시 파일 업로드가 완료되면 다음 단계인 **게시글 상세보기에서 첨부파일 표시**를 진행합니다.

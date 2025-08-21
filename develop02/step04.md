@@ -1,309 +1,300 @@
-# Step04: XSS 방지 및 보안 강화
+# Step 4: 게시글 상세보기에서 첨부파일 표시
 
-## 🎯 목표
+## 개요
 
-파일 업로드 시스템에 XSS(Cross-Site Scripting) 공격 방지 기능을 추가하여 보안을 강화합니다.
+게시글 상세보기에서 첨부파일을 표시하고 다운로드할 수 있는 기능을 구현합니다.
 
-## ⚠️ 중요: XSS 공격의 위험성
+## 1단계: BoardViewCommand 수정
 
-### XSS 공격이란?
+**수정되는 파일:**
+| 파일 경로 | 수정 내용 |
+|-----------|-----------|
+| `src/main/java/io/goorm/backend/command/BoardViewCommand.java` | 첨부파일 정보 로딩 추가 |
 
-- **정의**: 악성 스크립트를 웹페이지에 삽입하여 사용자 정보를 탈취하거나 악의적인 행위를 수행하는 공격
-- **위험성**:
-  - 사용자 세션 정보 탈취
-  - 개인정보 유출
-  - 악성 코드 실행
-  - 피싱 공격 유도
+**BoardViewCommand.java 주요 변경사항:**
 
-### 공격 예시:
+- `FileUploadDAO`를 사용하여 첨부파일 정보 조회
+- `board.setAttachments(attachments)`로 첨부파일 목록 설정
+- 첨부파일 로딩 실패 시 적절한 에러 처리
 
-```html
-<!-- 악성 사용자가 게시글에 삽입한 스크립트 -->
-<script>
-  alert("XSS 공격!");
-</script>
-<img src="x" onerror="alert('XSS')" />
-<a href="javascript:alert('XSS')">클릭하세요</a>
+**첨부파일 로딩 로직:**
+
+```java
+// 첨부파일 정보 로드
+try {
+    FileUploadDAO fileDAO = new FileUploadDAO();
+    List<FileUpload> attachments = fileDAO.getFilesByBoardId(id);
+    board.setAttachments(attachments);
+    System.out.println("=== BoardViewCommand 첨부파일 로딩 ===");
+    System.out.println("게시글 ID: " + id);
+    System.out.println("첨부파일 개수: " + attachments.size());
+    for (FileUpload file : attachments) {
+        System.out.println("파일: " + file.getOriginalFilename() + " (크기: " + file.getFileSize() + ")");
+    }
+    System.out.println("================================");
+} catch (Exception e) {
+    System.out.println("첨부파일 로딩 실패: " + e.getMessage());
+    e.printStackTrace();
+}
 ```
 
-## 📚 이론 포인트 리마인드
+---
 
-### 1. XSS 방지 방법
+## 2단계: view.jsp 수정
 
-- **입력값 검증**: 허용된 문자만 입력받기
-- **출력값 이스케이프**: 특수문자를 HTML 엔티티로 변환
-- **HTTP 헤더 설정**: Content Security Policy 등
+**수정되는 파일:**
+| 파일 경로 | 수정 내용 |
+|-----------|-----------|
+| `src/main/webapp/board/view.jsp` | 첨부파일 목록 표시 및 다운로드 링크 추가 |
 
-### 2. Servlet Filter
+**view.jsp 주요 변경사항:**
 
-- **역할**: 요청/응답을 가로채서 전처리/후처리
-- **장점**: 전역적으로 보안 적용 가능
-- **구현**: `Filter` 인터페이스 구현
+- 첨부파일 목록 표시 섹션 추가
+- 이미지 파일과 일반 파일 구분하여 표시
+- 이미지는 직접 링크, 일반 파일은 다운로드 링크
 
-## 🚀 실습 단계별 진행
-
-### 1단계: XSS 방지 이론 학습
-
-#### XSS 공격 유형
-
-1. **Reflected XSS**: URL 파라미터에 스크립트 삽입
-2. **Stored XSS**: 데이터베이스에 저장된 악성 스크립트
-3. **DOM-based XSS**: 클라이언트 사이드에서 발생
-
-#### 방지 원칙
-
-- **입력 시점**: 허용된 문자만 받기
-- **저장 시점**: 데이터베이스에 저장 전 검증
-- **출력 시점**: 화면에 표시 전 이스케이프
-
-### 2단계: 개별처리 방법 예제코드
-
-#### JSP에서 fn:escapeXml 사용
+**첨부파일 표시 섹션:**
 
 ```jsp
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-
-<!-- 안전하지 않은 출력 -->
-<p>${board.title}</p>
-
-<!-- 안전한 출력 (XSS 방지) -->
-<p>${fn:escapeXml(board.title)}</p>
-<p>${fn:escapeXml(board.content)}</p>
+<!-- 첨부파일 목록 -->
+<c:if test="${not empty board.attachments}">
+    <div class="attachments-section">
+        <h3>첨부파일</h3>
+        <div class="file-list">
+            <c:forEach var="file" items="${board.attachments}">
+                <div class="file-item">
+                    <c:choose>
+                        <c:when test="${file.contentType.startsWith('image/')}">
+                            <!-- 이미지 파일: 직접 표시 -->
+                            <div class="image-file">
+                                <img src="/uploads/images/${file.storedFilename}"
+                                     alt="${file.originalFilename}"
+                                     class="uploaded-image"
+                                     style="max-width: 200px; max-height: 200px;">
+                                <div class="file-info">
+                                    <span class="filename">${file.originalFilename}</span>
+                                    <span class="file-size">(${file.fileSize} bytes)</span>
+                                </div>
+                            </div>
+                        </c:when>
+                        <c:otherwise>
+                            <!-- 일반 파일: 다운로드 링크 -->
+                            <div class="regular-file">
+                                <span class="file-icon">📄</span>
+                                <span class="filename">${file.originalFilename}</span>
+                                <span class="file-size">(${file.fileSize} bytes)</span>
+                                <a href="front?command=fileDownload&id=${file.id}"
+                                   class="download-link">다운로드</a>
+                            </div>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+            </c:forEach>
+        </div>
+    </div>
+</c:if>
 ```
 
-#### JavaScript에서 이스케이프
+---
 
-```javascript
-function escapeHtml(text) {
-  const div = document.createElement("div");
-  div.textContent = text;
-  return div.innerHTML;
-}
+## 3단계: FileDownloadCommand 구현
 
-// 사용 예시
-const userInput = '<script>alert("XSS")</script>';
-const safeOutput = escapeHtml(userInput);
-console.log(safeOutput); // &lt;script&gt;alert("XSS")&lt;/script&gt;
-```
+**생성되는 파일:**
+| 파일 경로 | 설명 |
+|-----------|------|
+| `src/main/java/io/goorm/backend/command/FileDownloadCommand.java` | 파일 다운로드 처리 Command |
 
-#### Java에서 이스케이프
+**FileDownloadCommand.java 주요 기능:**
+
+- 파일 ID로 파일 정보 조회
+- 파일 경로 검증 및 보안 확인
+- 적절한 HTTP 헤더 설정
+- 파일 스트림 전송
+
+**파일 다운로드 처리:**
 
 ```java
-public class HtmlEscapeUtil {
-    public static String escapeHtml(String input) {
-        if (input == null) return null;
-
-        return input.replace("&", "&amp;")
-                   .replace("<", "&lt;")
-                   .replace(">", "&gt;")
-                   .replace("\"", "&quot;")
-                   .replace("'", "&#39;");
-    }
-}
-```
-
-### 3단계: XSSFilter 구현
-
-#### XSSFilter.java 생성
-
-```java
-package io.goorm.backend.filter;
-
-import javax.servlet.*;
-import javax.servlet.annotation.WebFilter;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
-import java.io.IOException;
-import java.util.regex.Pattern;
-
-@WebFilter("/*")
-public class XSSFilter implements Filter {
-
-    @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
-        // 필터 초기화
-    }
-
-    @Override
-    public void doFilter(ServletRequest request, ServletResponse response,
-                        FilterChain chain) throws IOException, ServletException {
-
-        // XSS 방지 래퍼로 요청 감싸기
-        XSSRequestWrapper wrappedRequest = new XSSRequestWrapper((HttpServletRequest) request);
-
-        // 다음 필터 또는 서블릿으로 전달
-        chain.doFilter(wrappedRequest, response);
-    }
-
-    @Override
-    public void destroy() {
-        // 필터 소멸
-    }
-
-    // XSS 방지 래퍼 클래스
-    private static class XSSRequestWrapper extends HttpServletRequestWrapper {
-
-        public XSSRequestWrapper(HttpServletRequest request) {
-            super(request);
+@Override
+public String execute(HttpServletRequest request, HttpServletResponse response) {
+    try {
+        String fileIdStr = request.getParameter("id");
+        if (fileIdStr == null || fileIdStr.trim().isEmpty()) {
+            throw new ServletException("파일 ID가 필요합니다.");
         }
 
-        @Override
-        public String getParameter(String parameter) {
-            String value = super.getParameter(parameter);
-            return stripXSS(value);
+        Long fileId = Long.parseLong(fileIdStr);
+        FileUploadDAO fileDAO = new FileUploadDAO();
+        FileUpload fileUpload = fileDAO.getFileById(fileId);
+
+        if (fileUpload == null) {
+            throw new ServletException("파일을 찾을 수 없습니다.");
         }
 
-        @Override
-        public String[] getParameterValues(String parameter) {
-            String[] values = super.getParameterValues(parameter);
-            if (values == null) return null;
+        // 파일 경로 검증
+        String filePath = validateAndGetFilePath(fileUpload.getFilePath());
+        File file = new File(filePath);
+        if (!file.exists()) {
+            throw new ServletException("물리적 파일이 존재하지 않습니다.");
+        }
 
-            int count = values.length;
-            String[] encodedValues = new String[count];
-            for (int i = 0; i < count; i++) {
-                encodedValues[i] = stripXSS(values[i]);
+        // 다운로드 헤더 설정
+        setDownloadHeaders(response, fileUpload);
+
+        // 파일 스트림 전송
+        try (FileInputStream fis = new FileInputStream(file);
+             OutputStream os = response.getOutputStream()) {
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+            while ((bytesRead = fis.read(buffer)) != -1) {
+                os.write(buffer, 0, bytesRead);
             }
-            return encodedValues;
+            os.flush();
         }
 
-        @Override
-        public String getHeader(String name) {
-            String value = super.getHeader(name);
-            return stripXSS(value);
-        }
-
-        // XSS 패턴 제거
-        private String stripXSS(String value) {
-            if (value == null) return null;
-
-            // 악성 스크립트 패턴 제거
-            value = value.replaceAll("", "");
-
-            // HTML 태그 제거
-            value = value.replaceAll("<", "&lt;").replaceAll(">", "&gt;");
-
-            // JavaScript 이벤트 제거
-            value = value.replaceAll("(?i)<script.*?>.*?</script.*?>", "");
-            value = value.replaceAll("(?i)<.*?javascript:.*?>.*?</.*?>", "");
-            value = value.replaceAll("(?i)<.*?\\s+on.*?=.*?>", "");
-
-            // 위험한 속성 제거
-            value = value.replaceAll("(?i)<.*?\\s+on.*?=.*?>", "");
-            value = value.replaceAll("(?i)<.*?\\s+on.*?=.*?>", "");
-
-            return value;
-        }
+        return null; // 파일 다운로드는 직접 스트림으로 처리
+    } catch (Exception e) {
+        e.printStackTrace();
+        request.setAttribute("error", "파일 다운로드 중 오류가 발생했습니다: " + e.getMessage());
+        return "/board/view.jsp";
     }
 }
 ```
 
-### 4단계: web.xml에 필터 설정
+---
 
-#### web.xml 수정
+## 4단계: HandlerMapping에 Command 등록
 
-```xml
-<!-- XSS 방지 필터 설정 -->
-<filter>
-    <filter-name>XSSFilter</filter-name>
-    <filter-class>io.goorm.backend.filter.XSSFilter</filter-class>
-</filter>
+**수정되는 파일:**
+| 파일 경로 | 수정 내용 |
+|-----------|-----------|
+| `src/main/java/io/goorm/backend/handler/HandlerMapping.java` | fileDownload Command 매핑 추가 |
 
-<filter-mapping>
-    <filter-name>XSSFilter</filter-name>
-    <url-pattern>/*</url-pattern>
-</filter-mapping>
-```
-
-### 5단계: 테스트 및 검증
-
-#### 테스트 시나리오
-
-1. **정상 입력**: 일반 텍스트 입력 후 정상 출력 확인
-2. **XSS 시도**: `<script>alert('XSS')</script>` 입력 후 이스케이프 확인
-3. **HTML 태그**: `<b>굵은 글씨</b>` 입력 후 이스케이프 확인
-4. **JavaScript 이벤트**: `onclick="alert('XSS')"` 입력 후 제거 확인
-
-## 📝 완료 체크리스트
-
-- [ ] XSS 공격 원리 이해
-- [ ] 개별처리 방법 예제코드 학습
-- [ ] XSSFilter.java 클래스 생성
-- [ ] web.xml에 필터 설정 추가
-- [ ] XSS 방지 테스트 완료
-- [ ] 보안 강화 효과 확인
-
-## ⚠️ 주의사항
-
-### 1. 필터 순서
-
-- **XSSFilter**는 다른 필터보다 **먼저** 실행되어야 함
-- `web.xml`에서 필터 순서 확인
-
-### 2. 성능 고려
-
-- 모든 요청에 대해 XSS 검사 수행
-- 정규식 패턴 최적화 필요
-
-### 3. 한글 처리
-
-- UTF-8 인코딩 설정 확인
-- 한글 문자가 깨지지 않도록 주의
-
-### 4. 테스트 범위
-
-- GET/POST 파라미터 모두 테스트
-- 헤더 값도 XSS 방지 적용 확인
-
-## 🎯 테스트 방법
-
-### 1. 기본 테스트
-
-```bash
-# 정상 입력 테스트
-curl "http://localhost:8080/front?command=boardInsert&title=테스트&content=내용"
-
-# XSS 시도 테스트
-curl "http://localhost:8080/front?command=boardInsert&title=<script>alert('XSS')</script>&content=<img src=x onerror=alert('XSS')>"
-```
-
-### 2. 브라우저 테스트
-
-- 게시글 작성 폼에서 XSS 코드 입력
-- 저장 후 목록/상세보기에서 이스케이프 확인
-- 개발자 도구에서 HTML 소스 확인
-
-### 3. 로그 확인
-
-- 필터 동작 로그 확인
-- 요청/응답 처리 과정 모니터링
-
-## 💡 추가 보안 고려사항
-
-### 1. Content Security Policy (CSP)
-
-```html
-<meta
-  http-equiv="Content-Security-Policy"
-  content="default-src 'self'; script-src 'self' 'unsafe-inline'"
-/>
-```
-
-### 2. HttpOnly 쿠키
+**HandlerMapping.java 추가 매핑:**
 
 ```java
-// 세션 쿠키에 HttpOnly 플래그 설정
-Cookie sessionCookie = new Cookie("JSESSIONID", sessionId);
-sessionCookie.setHttpOnly(true);
+// 파일 다운로드 명령어 추가
+commandMap.put("fileDownload", new FileDownloadCommand());
 ```
 
-### 3. 입력값 검증 강화
+---
 
-```java
-// 정규식을 통한 입력값 검증
-Pattern validInput = Pattern.compile("^[a-zA-Z0-9가-힣\\s]+$");
-if (!validInput.matcher(input).matches()) {
-    throw new IllegalArgumentException("허용되지 않는 문자가 포함되어 있습니다.");
+## 5단계: 첨부파일 스타일링
+
+**view.jsp에 추가되는 CSS 스타일:**
+
+```jsp
+<style>
+.attachments-section {
+    margin: 20px 0;
+    padding: 15px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background-color: #f9fafb;
 }
+
+.file-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.file-item {
+    padding: 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background-color: white;
+}
+
+.image-file img {
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.file-info {
+    margin-top: 8px;
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.regular-file {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.file-icon {
+    font-size: 20px;
+}
+
+.filename {
+    font-weight: 500;
+    color: #374151;
+}
+
+.file-size {
+    color: #6b7280;
+    font-size: 12px;
+}
+
+.download-link {
+    color: #3b82f6;
+    text-decoration: none;
+    padding: 4px 8px;
+    border: 1px solid #3b82f6;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.download-link:hover {
+    background-color: #3b82f6;
+    color: white;
+}
+</style>
 ```
 
-이제 XSS 방지 기능을 구현하여 보안이 강화된 파일 업로드 시스템을 완성할 수 있습니다!
+---
+
+## 완료 체크리스트
+
+- [ ] BoardViewCommand에 첨부파일 로딩 추가
+- [ ] view.jsp에 첨부파일 표시 섹션 추가
+- [ ] 이미지와 일반 파일 구분하여 표시
+- [ ] FileDownloadCommand 구현
+- [ ] HandlerMapping에 fileDownload 등록
+- [ ] 첨부파일 스타일링 추가
+- [ ] 파일 다운로드 테스트
+
+---
+
+## 테스트 방법
+
+1. **첨부파일 표시 테스트:**
+
+   - 첨부파일이 있는 게시글 상세보기 접근
+   - 첨부파일 목록이 올바르게 표시되는지 확인
+   - 이미지 파일이 직접 표시되는지 확인
+
+2. **파일 다운로드 테스트:**
+
+   - 일반 파일의 다운로드 링크 클릭
+   - 파일이 정상적으로 다운로드되는지 확인
+   - 파일명과 크기가 올바르게 표시되는지 확인
+
+3. **에러 처리 테스트:**
+   - 존재하지 않는 파일 ID로 다운로드 시도
+   - 적절한 에러 메시지가 표시되는지 확인
+
+---
+
+## 다음 단계
+
+게시글 상세보기에서 첨부파일 표시가 완료되면 **develop02의 모든 기능이 완성**됩니다.
+
+---
+
+## 보안 고려사항
+
+- 파일 경로 검증으로 디렉토리 트래버설 공격 방지
+- 업로드 디렉토리 외부의 파일 접근 차단
+- 적절한 에러 메시지로 시스템 정보 노출 방지
+- 파일 다운로드 시 권한 확인 고려 (필요시)
