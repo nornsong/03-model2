@@ -84,6 +84,7 @@
             </div>
         </c:if>
 
+        <!-- 게시글 목록 테이블 -->
         <div class="bg-white shadow-md rounded-lg overflow-hidden">
             <table class="min-w-full">
                 <thead class="bg-gray-50">
@@ -109,12 +110,14 @@
                                     </c:choose>
                                 </td>
                             </tr>
-                        </c:otherwise>
+                        </c:when>
                         <c:otherwise>
                             <c:forEach var="board" items="${boards}" varStatus="status">
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        ${pagination.totalCount - (pagination.currentPage - 1) * pagination.pageSize - status.index}
+                                        <c:if test="${not empty pagination}">
+                                            ${pagination.totalCount - (pagination.currentPage - 1) * pagination.pageSize - status.index}
+                                        </c:if>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         <a href="front?command=boardView&id=${board.id}" class="text-blue-600 hover:text-blue-900">${board.title}</a>
@@ -144,9 +147,6 @@
                     <c:if test="${pagination.hasPrevious}">
                         <a href="front?command=boardList&page=${pagination.previousPage}&searchType=${searchType}&searchKeyword=${searchKeyword}"
                            class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                            </svg>
                             이전
                         </a>
                     </c:if>
@@ -173,9 +173,6 @@
                         <a href="front?command=boardList&page=${pagination.nextPage}&searchType=${searchType}&searchKeyword=${searchKeyword}"
                            class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
                             다음
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                            </svg>
                         </a>
                     </c:if>
                 </div>
