@@ -83,8 +83,8 @@ public class BoardDAO {
       }, keyHolder);
 
       if (result > 0) {
-        // 생성된 ID를 board 객체에 설정
-        Number generatedId = keyHolder.getKey();
+        // ID 컬럼만 가져오기
+        Number generatedId = keyHolder.getKeyAs("ID");
         if (generatedId != null) {
           board.setId(generatedId.longValue());
           System.out.println("생성된 게시글 ID: " + board.getId());
