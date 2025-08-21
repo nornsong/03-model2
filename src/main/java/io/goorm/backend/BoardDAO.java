@@ -70,7 +70,7 @@ public class BoardDAO {
 
     if (result > 0) {
       // H2에서 방금 생성된 ID 가져오기
-      Long generatedId = jdbcTemplate.queryForObject("SELECT IDENTITY()", Long.class);
+      Long generatedId = jdbcTemplate.queryForObject("SELECT SCOPE_IDENTITY()", Long.class);
       board.setId(generatedId);
       System.out.println("생성된 게시글 ID: " + board.getId());
       return true;
