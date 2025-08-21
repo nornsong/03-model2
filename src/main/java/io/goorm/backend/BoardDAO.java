@@ -114,6 +114,93 @@ public class BoardDAO {
   }
 
   /**
+   * 전체 게시글 수 조회
+   */
+  public int getTotalBoardCount() {
+    String sql = "SELECT COUNT(*) FROM board";
+    try {
+      Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
+      return count != null ? count : 0;
+    } catch (Exception e) {
+      e.printStackTrace();
+      return 0;
+    }
+  }
+
+  /**
+   * 페이지네이션을 적용한 게시글 목록 조회
+   */
+  public List<Board> getBoardListWithPagination(int page, int pageSize) {
+    String sql = "SELECT b.*, u.name as author_name FROM board b " +
+        "LEFT JOIN users u ON b.author = u.id " +
+        "ORDER BY b.created_at DESC " +
+        "LIMIT ? OFFSET ?";
+
+    int offset = (page - 1) * pageSize;
+    return jdbcTemplate.query(sql, boardRowMapper, pageSize, offset);
+  }
+
+  /**
+   * 검색 결과 게시글 수 조회
+   */
+  public int getSearchBoardCount(String searchType, String searchKeyword) {
+    String sql = "SELECT COUNT(*) FROM board WHERE ";
+
+    switch (searchType) {
+      case "title":
+        sql += "title LIKE ?";
+        break;
+      case "content":
+        sql += "content LIKE ?";
+        break;
+      case "author":
+        sql += "author IN (SELECT id FROM users WHERE name LIKE ?)";
+        break;
+      default:
+        sql += "title LIKE ?";
+    }
+
+    try {
+      String searchPattern = "%" + searchKeyword + "%";
+      Integer count = jdbcTemplate.queryForObject(sql, Integer.class, searchPattern);
+      return count != null ? count : 0;
+    } catch (Exception e) {
+      e.printStackTrace();
+      return 0;
+    }
+  }
+
+  /**
+   * 검색 결과에 페이지네이션 적용
+   */
+  public List<Board> searchBoardWithPagination(String searchType, String searchKeyword, int page, int pageSize) {
+    String sql = "SELECT b.*, u.name as author_name FROM board b " +
+        "LEFT JOIN users u ON b.author = u.id " +
+        "WHERE ";
+
+    switch (searchType) {
+      case "title":
+        sql += "b.title LIKE ? ";
+        break;
+      case "content":
+        sql += "b.content LIKE ? ";
+        break;
+      case "author":
+        sql += "b.author IN (SELECT id FROM users WHERE name LIKE ?) ";
+        break;
+      default:
+        sql += "b.title LIKE ? ";
+    }
+
+    sql += "ORDER BY b.created_at DESC LIMIT ? OFFSET ?";
+
+    int offset = (page - 1) * pageSize;
+    String searchPattern = "%" + searchKeyword + "%";
+
+    return jdbcTemplate.query(sql, boardRowMapper, searchPattern, pageSize, offset);
+  }
+
+  /**
    * 게시글의 첨부파일 정보 로드
    */
   private void loadAttachments(Board board) {
