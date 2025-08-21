@@ -107,7 +107,7 @@
                             <label class="block text-sm font-medium text-gray-700 mb-2">첨부파일</label>
                             <div class="space-y-2">
                                 <c:forEach var="file" items="${board.attachments}">
-                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg" data-file-id="${file.id}">
                                         <div class="flex items-center space-x-3">
                                             <!-- 파일 타입별 아이콘 -->
                                             <c:choose>
@@ -139,6 +139,17 @@
                                                 </c:otherwise>
                                             </c:choose>
                                         </div>
+                                        
+                                        <!-- 파일 삭제 버튼 - 본인이 작성한 글에만 표시 -->
+                                        <c:if test="${not empty sessionScope.user and sessionScope.user.id == board.author}">
+                                            <button type="button" 
+                                                    onclick="deleteFile(${file.id})"
+                                                    class="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-100 transition-colors">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                </svg>
+                                            </button>
+                                        </c:if>
                                     </div>
                                 </c:forEach>
                             </div>
@@ -153,5 +164,49 @@
             <p>특징: Servlet이 데이터 조회, JSP는 화면 출력, JSTL로 조건부 출력 처리</p>
         </div>
     </div>
+    
+    <!-- 파일 삭제 AJAX JavaScript -->
+    <script>
+        function deleteFile(fileId) {
+            if (!confirm('정말로 이 파일을 삭제하시겠습니까?')) {
+                return;
+            }
+            
+            // AJAX 요청으로 파일 삭제
+            fetch('front?command=fileDelete&fileId=' + fileId, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // 성공 시 해당 파일 요소 제거
+                    const fileElement = document.querySelector(`[data-file-id="${fileId}"]`);
+                    if (fileElement) {
+                        fileElement.remove();
+                    }
+                    
+                    // 파일이 없으면 기존 첨부파일 섹션 숨기기
+                    const remainingFiles = document.querySelectorAll('[data-file-id]');
+                    if (remainingFiles.length === 0) {
+                        const attachmentsSection = document.querySelector('.attachments-section');
+                        if (attachmentsSection) {
+                            attachmentsSection.style.display = 'none';
+                        }
+                    }
+                    
+                    alert('파일이 삭제되었습니다.');
+                } else {
+                    alert('파일 삭제에 실패했습니다: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('파일 삭제 중 오류가 발생했습니다.');
+            });
+        }
+    </script>
 </body>
 </html>
