@@ -6,25 +6,32 @@ plugins {
 group = 'io.goorm.backend'
 version = '1.0-SNAPSHOT'
 
+java {
+    toolchain { languageVersion = JavaLanguageVersion.of(17) }
+}
+
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    // Spring Framework
+    // --- Servlet/JSP (외부 Tomcat이 제공하므로 compileOnly) ---
+    compileOnly 'javax.servlet:javax.servlet-api:4.0.1'
+    compileOnly 'javax.servlet.jsp:javax.servlet.jsp-api:2.3.3'
+
+    // JSTL (JSP <c:...> 태그용)
+    implementation 'jstl:jstl:1.2'
+
+    // --- Spring (JdbcTemplate 실습용 최소셋) ---
     implementation 'org.springframework:spring-core:5.3.20'
     implementation 'org.springframework:spring-context:5.3.20'
     implementation 'org.springframework:spring-jdbc:5.3.20'
     implementation 'org.springframework:spring-tx:5.3.20'
 
-    // Database
-    implementation 'com.h2database:h2:2.3.232'
+    // --- DB Driver (H2, 로컬 테스트용) ---
+    runtimeOnly 'com.h2database:h2:2.3.232'
 
-    providedCompile 'javax.servlet:javax.servlet-api:4.0.1'
-    providedCompile 'javax.servlet.jsp:javax.servlet.jsp-api:2.3.3'
-    implementation 'javax.servlet:jstl:1.2'
-
-    // Test
+    // --- Test ---
     testImplementation 'org.junit.jupiter:junit-jupiter:5.8.2'
 }
 
@@ -32,8 +39,7 @@ test {
     useJUnitPlatform()
 }
 
-// WAR 파일 설정
 war {
     archiveBaseName = '03-model2'
-    archiveVersion = '1.0'
+    archiveVersion  = '1.0'
 }
